@@ -23,7 +23,7 @@ A mobile PWA for quickly adding events to Google Calendar. Built because the def
 ## How It Works
 
 1. Type the event title
-2. Write the date (dd/mm/yyyy) on the canvas and tap "Recognise"
+2. Write the date (dd/mm/yy) on the canvas and tap "Recognise"
 3. Write the time (hh:mm am/pm) on the canvas and tap "Recognise"
 4. Optionally type a venue
 5. Submit — a 1-hour event is created in your Google Calendar

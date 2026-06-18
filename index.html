@@ -397,7 +397,7 @@
           <div class="screen-label">Date</div>
           <div class="canvas-container" id="dateCanvasContainer">
             <canvas id="dateCanvas"></canvas>
-            <div class="canvas-placeholder">Write date here<br>(dd/mm/yyyy)</div>
+            <div class="canvas-placeholder">Write date here<br>(dd/mm/yy)</div>
           </div>
           <div class="recognised-value" id="dateValue"></div>
           <div class="canvas-actions">
@@ -621,7 +621,7 @@
       const base64 = imageData.split(',')[1];
 
       const prompt = name === 'date'
-        ? 'Read the handwritten date in this image. Return ONLY the date in dd/mm/yyyy format. Nothing else.'
+        ? 'Read the handwritten date in this image. Return ONLY the date in dd/mm/yy format. Nothing else.'
         : 'Read the handwritten time in this image. Return ONLY the time in hh:mm am/pm format (e.g. 2:30 pm). Nothing else.';
 
       try {
