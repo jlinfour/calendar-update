@@ -24,4 +24,4 @@ A mobile PWA for quickly adding events to Google Calendar with a streamlined mul
 - Location/venue field is optional
 - All API keys stored in localStorage (client-side only, not in code)
 - Default event duration: 1 hour
-- Date format: dd/mm/yyyy; Time format: hh:mm am/pm
+- Date format: dd/mm/yy; Time format: hh:mm am/pm
