@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#111111">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Calendar Update</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #fafafa;
+      --card-bg: #ffffff;
+      --border: #222;
+      --text: #111;
+      --text-muted: #888;
+      --accent: #111;
+      --canvas-bg: #fff;
+      --shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100dvh;
+      overflow: hidden;
+      touch-action: pan-y;
+    }
+
+    .app {
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      padding: 16px 20px 8px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+    }
+
+    /* Progress */
+    .progress {
+      display: flex;
+      gap: 6px;
+      padding: 8px 40px;
+    }
+
+    .progress-dot {
+      flex: 1;
+      height: 3px;
+      background: #ddd;
+      border-radius: 2px;
+      transition: background 0.3s;
+    }
+
+    .progress-dot.active {
+      background: var(--accent);
+    }
+
+    /* Screens container */
+    .screens-wrapper {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .screens {
+      display: flex;
+      height: 100%;
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .screen {
+      min-width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 24px;
+    }
+
+    /* Screen content */
+    .screen-label {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      letter-spacing: 1px;
+    }
+
+    .text-input {
+      width: 100%;
+      max-width: 320px;
+      padding: 14px 16px;
+      font-size: 18px;
+      border: 2px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text);
+      text-align: center;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .text-input:focus {
+      border-color: #555;
+    }
+
+    .text-input::placeholder {
+      color: #bbb;
+    }
+
+    /* Canvas area */
+    .canvas-container {
+      width: 100%;
+      max-width: 320px;
+      aspect-ratio: 4/3;
+      border: 2px solid var(--border);
+      background: var(--canvas-bg);
+      position: relative;
+      touch-action: none;
+    }
+
+    .canvas-container canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .canvas-placeholder {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #ccc;
+      font-size: 15px;
+      text-align: center;
+      line-height: 1.5;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .canvas-container.has-content .canvas-placeholder {
+      opacity: 0;
+    }
+
+    .recognised-value {
+      margin-top: 12px;
+      font-size: 20px;
+      font-weight: 600;
+      min-height: 28px;
+      color: var(--text);
+    }
+
+    .recognised-value.loading {
+      color: var(--text-muted);
+      font-weight: 400;
+      font-size: 14px;
+    }
+
+    .canvas-actions {
+      margin-top: 8px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-small {
+      padding: 6px 16px;
+      font-size: 13px;
+      border: 1.5px solid var(--border);
+      background: var(--card-bg);
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--text);
+    }
+
+    .btn-small:active {
+      background: #eee;
+    }
+
+    /* Navigation */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px 28px;
+    }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border: 2px solid var(--border);
+      background: var(--card-bg);
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .nav-btn:active {
+      background: #eee;
+    }
+
+    .nav-btn.hidden {
+      visibility: hidden;
+    }
+
+    .nav-btn.submit {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .nav-btn.submit:active {
+      background: #333;
+    }
+
+    .nav-btn .arrow {
+      font-size: 18px;
+    }
+
+    /* Settings overlay */
+    .settings-toggle {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: transparent;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text-muted);
+      z-index: 10;
+    }
+
+    .settings-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .settings-overlay.open {
+      display: flex;
+    }
+
+    .settings-panel {
+      background: var(--card-bg);
+      padding: 28px 24px;
+      width: 90%;
+      max-width: 380px;
+      max-height: 80dvh;
+      overflow-y: auto;
+      border: 2px solid var(--border);
+    }
+
+    .settings-panel h2 {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    .settings-panel label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    .settings-panel input, .settings-panel select {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 15px;
+      border: 1.5px solid #ccc;
+      margin-bottom: 16px;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .settings-panel .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .settings-panel .btn-row button {
+      flex: 1;
+      padding: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .settings-panel .btn-save {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .settings-panel .btn-cancel {
+      background: var(--card-bg);
+      color: var(--text);
+    }
+
+    .settings-panel .btn-google {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      border: 2px solid #4285f4;
+      background: #4285f4;
+      color: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      margin-bottom: 16px;
+    }
+
+    .settings-panel .btn-google.connected {
+      background: #fff;
+      color: #4285f4;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--accent);
+      color: #fff;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 200;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <h1>New Event</h1>
+    </div>
+
+    <div class="progress">
+      <div class="progress-dot active" data-step="0"></div>
+      <div class="progress-dot" data-step="1"></div>
+      <div class="progress-dot" data-step="2"></div>
+      <div class="progress-dot" data-step="3"></div>
+    </div>
+
+    <button class="settings-toggle" onclick="toggleSettings()">&#9881;</button>
+
+    <div class="screens-wrapper">
+      <div class="screens" id="screens">
+        <!-- Title -->
+        <div class="screen">
+          <div class="screen-label">Title</div>
+          <input class="text-input" id="titleInput" type="text" placeholder="Type title here" autocomplete="off">
+        </div>
+
+        <!-- Date -->
+        <div class="screen">
+          <div class="screen-label">Date</div>
+          <div class="canvas-container" id="dateCanvasContainer">
+            <canvas id="dateCanvas"></canvas>
+            <div class="canvas-placeholder">Write date here<br>(dd/mm/yyyy)</div>
+          </div>
+          <div class="recognised-value" id="dateValue"></div>
+          <div class="canvas-actions">
+            <button class="btn-small" onclick="clearCanvas('date')">Clear</button>
+            <button class="btn-small" onclick="recognise('date')">Recognise</button>
+          </div>
+        </div>
+
+        <!-- Time -->
+        <div class="screen">
+          <div class="screen-label">Time</div>
+          <div class="canvas-container" id="timeCanvasContainer">
+            <canvas id="timeCanvas"></canvas>
+            <div class="canvas-placeholder">Write time here<br>(hh:mm am/pm)</div>
+          </div>
+          <div class="recognised-value" id="timeValue"></div>
+          <div class="canvas-actions">
+            <button class="btn-small" onclick="clearCanvas('time')">Clear</button>
+            <button class="btn-small" onclick="recognise('time')">Recognise</button>
+          </div>
+        </div>
+
+        <!-- Venue -->
+        <div class="screen">
+          <div class="screen-label">Venue</div>
+          <input class="text-input" id="venueInput" type="text" placeholder="Type venue here (optional)" autocomplete="off">
+        </div>
+      </div>
+    </div>
+
+    <div class="nav">
+      <button class="nav-btn hidden" id="prevBtn" onclick="navigate(-1)">
+        <span class="arrow">&#9664;</span> <span id="prevLabel">Back</span>
+      </button>
+      <button class="nav-btn" id="nextBtn" onclick="navigate(1)">
+        <span id="nextLabel">Date</span> <span class="arrow">&#9654;</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="settings-overlay" id="settingsOverlay">
+    <div class="settings-panel">
+      <h2>Settings</h2>
+
+      <button class="btn-google" id="googleAuthBtn" onclick="handleGoogleAuth()">
+        Connect Google Calendar
+      </button>
+
+      <label>OpenRouter API Key</label>
+      <input type="password" id="openrouterKey" placeholder="sk-or-...">
+
+      <label>Vision Model</label>
+      <select id="visionModel">
+        <option value="anthropic/claude-sonnet-4">Claude Sonnet 4</option>
+        <option value="anthropic/claude-haiku-4">Claude Haiku 4</option>
+        <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
+        <option value="openai/gpt-4o">GPT-4o</option>
+        <option value="google/gemini-flash-1.5">Gemini Flash</option>
+      </select>
+
+      <label>Google Client ID</label>
+      <input type="text" id="googleClientId" placeholder="xxxxx.apps.googleusercontent.com">
+
+      <div class="btn-row">
+        <button class="btn-cancel" onclick="toggleSettings()">Cancel</button>
+        <button class="btn-save" onclick="saveSettings()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ── State ──
+    let currentScreen = 0;
+    const screenLabels = ['Title', 'Date', 'Time', 'Venue'];
+    const canvases = {};
+    let googleAccessToken = null;
+
+    // ── Navigation ──
+    function navigate(dir) {
+      const next = currentScreen + dir;
+      if (next < 0 || next > 3) return;
+
+      if (dir === 1 && currentScreen === 0) {
+        const title = document.getElementById('titleInput').value.trim();
+        if (!title) { showToast('Please enter a title'); return; }
+      }
+
+      if (dir === 1 && currentScreen === 3) {
+        submitEvent();
+        return;
+      }
+
+      currentScreen = next;
+      updateUI();
+    }
+
+    function updateUI() {
+      document.getElementById('screens').style.transform = `translateX(-${currentScreen * 100}%)`;
+
+      document.querySelectorAll('.progress-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i <= currentScreen);
+      });
+
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+
+      prevBtn.classList.toggle('hidden', currentScreen === 0);
+      document.getElementById('prevLabel').textContent = screenLabels[currentScreen - 1] || '';
+
+      if (currentScreen === 3) {
+        nextBtn.classList.add('submit');
+        document.getElementById('nextLabel').textContent = 'Submit';
+        nextBtn.querySelector('.arrow').textContent = '✓';
+      } else {
+        nextBtn.classList.remove('submit');
+        document.getElementById('nextLabel').textContent = screenLabels[currentScreen + 1] || '';
+        nextBtn.querySelector('.arrow').textContent = '▶';
+      }
+    }
+
+    // ── Canvas Drawing ──
+    function initCanvas(name) {
+      const container = document.getElementById(`${name}CanvasContainer`);
+      const canvas = document.getElementById(`${name}Canvas`);
+      const ctx = canvas.getContext('2d');
+
+      function resize() {
+        const rect = container.getBoundingClientRect();
+        canvas.width = rect.width * window.devicePixelRatio;
+        canvas.height = rect.height * window.devicePixelRatio;
+        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#111';
+      }
+
+      resize();
+
+      let drawing = false;
+      let hasContent = false;
+
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches ? e.touches[0] : e;
+        return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+      }
+
+      function start(e) {
+        e.preventDefault();
+        drawing = true;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+      }
+
+      function move(e) {
+        if (!drawing) return;
+        e.preventDefault();
+        const pos = getPos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        if (!hasContent) {
+          hasContent = true;
+          container.classList.add('has-content');
+        }
+      }
+
+      function end(e) {
+        if (drawing) {
+          drawing = false;
+          ctx.closePath();
+        }
+      }
+
+      canvas.addEventListener('mousedown', start);
+      canvas.addEventListener('mousemove', move);
+      canvas.addEventListener('mouseup', end);
+      canvas.addEventListener('mouseleave', end);
+      canvas.addEventListener('touchstart', start, { passive: false });
+      canvas.addEventListener('touchmove', move, { passive: false });
+      canvas.addEventListener('touchend', end);
+
+      canvases[name] = { canvas, ctx, container, resize, hasContent: () => hasContent, reset: () => { hasContent = false; } };
+
+      window.addEventListener('resize', resize);
+    }
+
+    function clearCanvas(name) {
+      const c = canvases[name];
+      const rect = c.container.getBoundingClientRect();
+      c.ctx.clearRect(0, 0, rect.width, rect.height);
+      c.container.classList.remove('has-content');
+      c.reset();
+      document.getElementById(`${name}Value`).textContent = '';
+      document.getElementById(`${name}Value`).className = 'recognised-value';
+    }
+
+    // ── Handwriting Recognition ──
+    async function recognise(name) {
+      const settings = loadSettings();
+      if (!settings.openrouterKey) {
+        showToast('Set OpenRouter API key in settings');
+        return;
+      }
+
+      const c = canvases[name];
+      if (!c.hasContent()) {
+        showToast(`Write the ${name} first`);
+        return;
+      }
+
+      const valueEl = document.getElementById(`${name}Value`);
+      valueEl.textContent = 'Recognising...';
+      valueEl.className = 'recognised-value loading';
+
+      const imageData = c.canvas.toDataURL('image/png');
+      const base64 = imageData.split(',')[1];
+
+      const prompt = name === 'date'
+        ? 'Read the handwritten date in this image. Return ONLY the date in dd/mm/yyyy format. Nothing else.'
+        : 'Read the handwritten time in this image. Return ONLY the time in hh:mm am/pm format (e.g. 2:30 pm). Nothing else.';
+
+      try {
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${settings.openrouterKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: settings.visionModel || 'anthropic/claude-sonnet-4',
+            messages: [{
+              role: 'user',
+              content: [
+                { type: 'text', text: prompt },
+                { type: 'image_url', image_url: { url: imageData } }
+              ]
+            }],
+            max_tokens: 30,
+          })
+        });
+
+        const data = await res.json();
+        const result = data.choices?.[0]?.message?.content?.trim();
+
+        if (result) {
+          valueEl.textContent = result;
+          valueEl.className = 'recognised-value';
+        } else {
+          valueEl.textContent = 'Could not recognise';
+          valueEl.className = 'recognised-value loading';
+        }
+      } catch (err) {
+        valueEl.textContent = 'Error — check API key';
+        valueEl.className = 'recognised-value loading';
+        console.error(err);
+      }
+    }
+
+    // ── Google Calendar ──
+    function handleGoogleAuth() {
+      const settings = loadSettings();
+      if (!settings.googleClientId) {
+        showToast('Set Google Client ID in settings first');
+        return;
+      }
+
+      const redirectUri = window.location.origin + window.location.pathname;
+      const scope = 'https://www.googleapis.com/auth/calendar.events';
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(settings.googleClientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}&prompt=consent`;
+
+      window.location.href = authUrl;
+    }
+
+    function checkAuthRedirect() {
+      const hash = window.location.hash;
+      if (hash.includes('access_token')) {
+        const params = new URLSearchParams(hash.substring(1));
+        googleAccessToken = params.get('access_token');
+        window.location.hash = '';
+        updateGoogleButton(true);
+        showToast('Google Calendar connected');
+      }
+    }
+
+    function updateGoogleButton(connected) {
+      const btn = document.getElementById('googleAuthBtn');
+      if (connected) {
+        btn.textContent = 'Connected ✓';
+        btn.classList.add('connected');
+      } else {
+        btn.textContent = 'Connect Google Calendar';
+        btn.classList.remove('connected');
+      }
+    }
+
+    async function submitEvent() {
+      if (!googleAccessToken) {
+        showToast('Connect Google Calendar first');
+        toggleSettings();
+        return;
+      }
+
+      const title = document.getElementById('titleInput').value.trim();
+      const dateStr = document.getElementById('dateValue').textContent.trim();
+      const timeStr = document.getElementById('timeValue').textContent.trim();
+      const venue = document.getElementById('venueInput').value.trim();
+
+      if (!title) { showToast('Title is required'); return; }
+      if (!dateStr || dateStr.includes('...') || dateStr.includes('Error')) {
+        showToast('Please recognise the date first');
+        return;
+      }
+      if (!timeStr || timeStr.includes('...') || timeStr.includes('Error')) {
+        showToast('Please recognise the time first');
+        return;
+      }
+
+      const dateTime = parseDateTime(dateStr, timeStr);
+      if (!dateTime) {
+        showToast('Could not parse date/time');
+        return;
+      }
+
+      const endTime = new Date(dateTime.getTime() + 60 * 60 * 1000);
+
+      const event = {
+        summary: title,
+        start: { dateTime: dateTime.toISOString(), timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
+        end: { dateTime: endTime.toISOString(), timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
+      };
+
+      if (venue) {
+        event.location = venue;
+      }
+
+      try {
+        showToast('Creating event...');
+        const res = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${googleAccessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(event),
+        });
+
+        if (res.ok) {
+          showToast('Event created!');
+          setTimeout(resetForm, 1500);
+        } else {
+          const err = await res.json();
+          if (res.status === 401) {
+            googleAccessToken = null;
+            updateGoogleButton(false);
+            showToast('Session expired — reconnect Google');
+          } else {
+            showToast('Failed: ' + (err.error?.message || 'Unknown error'));
+          }
+        }
+      } catch (err) {
+        showToast('Network error');
+        console.error(err);
+      }
+    }
+
+    function parseDateTime(dateStr, timeStr) {
+      try {
+        const dateParts = dateStr.match(/(\d{1,2})\D(\d{1,2})\D(\d{2,4})/);
+        if (!dateParts) return null;
+
+        let [, day, month, year] = dateParts;
+        day = parseInt(day);
+        month = parseInt(month) - 1;
+        year = parseInt(year);
+        if (year < 100) year += 2000;
+
+        const timeMatch = timeStr.match(/(\d{1,2})\D(\d{2})\s*(am|pm)?/i);
+        if (!timeMatch) return null;
+
+        let [, hours, minutes, ampm] = timeMatch;
+        hours = parseInt(hours);
+        minutes = parseInt(minutes);
+
+        if (ampm) {
+          if (ampm.toLowerCase() === 'pm' && hours !== 12) hours += 12;
+          if (ampm.toLowerCase() === 'am' && hours === 12) hours = 0;
+        }
+
+        return new Date(year, month, day, hours, minutes);
+      } catch {
+        return null;
+      }
+    }
+
+    function resetForm() {
+      document.getElementById('titleInput').value = '';
+      document.getElementById('venueInput').value = '';
+      clearCanvas('date');
+      clearCanvas('time');
+      currentScreen = 0;
+      updateUI();
+    }
+
+    // ── Settings ──
+    function loadSettings() {
+      try {
+        return JSON.parse(localStorage.getItem('calendarUpdateSettings') || '{}');
+      } catch { return {}; }
+    }
+
+    function saveSettings() {
+      const settings = {
+        openrouterKey: document.getElementById('openrouterKey').value.trim(),
+        visionModel: document.getElementById('visionModel').value,
+        googleClientId: document.getElementById('googleClientId').value.trim(),
+      };
+      localStorage.setItem('calendarUpdateSettings', JSON.stringify(settings));
+      toggleSettings();
+      showToast('Settings saved');
+    }
+
+    function populateSettings() {
+      const settings = loadSettings();
+      document.getElementById('openrouterKey').value = settings.openrouterKey || '';
+      document.getElementById('visionModel').value = settings.visionModel || 'anthropic/claude-sonnet-4';
+      document.getElementById('googleClientId').value = settings.googleClientId || '';
+    }
+
+    function toggleSettings() {
+      const overlay = document.getElementById('settingsOverlay');
+      const isOpen = overlay.classList.contains('open');
+      if (!isOpen) populateSettings();
+      overlay.classList.toggle('open');
+    }
+
+    // ── Toast ──
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // ── Swipe ──
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    document.querySelector('.screens-wrapper').addEventListener('touchstart', (e) => {
+      if (e.target.tagName === 'CANVAS') return;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    });
+
+    document.querySelector('.screens-wrapper').addEventListener('touchend', (e) => {
+      if (e.target.tagName === 'CANVAS') return;
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      const dy = e.changedTouches[0].clientY - touchStartY;
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+        navigate(dx < 0 ? 1 : -1);
+      }
+    });
+
+    // ── Init ──
+    document.addEventListener('DOMContentLoaded', () => {
+      initCanvas('date');
+      initCanvas('time');
+      updateUI();
+      checkAuthRedirect();
+
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js');
+      }
+    });
+  </script>
+</body>
+</html>
