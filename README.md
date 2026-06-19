@@ -5,10 +5,11 @@ A mobile PWA for quickly adding events to Google Calendar. Built because the def
 ## Features
 
 - **Multi-step form**: Title → Date → Time → Venue → Submit
-- **Handwriting input**: Write date and time on a canvas using your finger
+- **Write or type**: Toggle between handwriting canvas and typed input for date/time
 - **Handwriting recognition**: Powered by vision models via OpenRouter (fractions of a cent per call)
 - **Google Calendar integration**: Events are created directly in your primary calendar
 - **PWA**: Install on your phone's home screen — works like a native app
+- **Dark glassmorphic UI**: Futuristic emerald-accented design
 
 ## Usage
 
@@ -23,8 +24,8 @@ A mobile PWA for quickly adding events to Google Calendar. Built because the def
 ## How It Works
 
 1. Type the event title
-2. Write the date (dd/mm/yy) on the canvas and tap "Recognise"
-3. Write the time (hh:mm am/pm) on the canvas and tap "Recognise"
+2. Enter the date (dd/mm/yy) — write on the canvas and tap "Recognise", or toggle to "Type" and enter directly
+3. Enter the time (hh:mm am/pm) — same write/type options
 4. Optionally type a venue
 5. Submit — a 1-hour event is created in your Google Calendar
 
