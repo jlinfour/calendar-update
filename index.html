@@ -2,34 +2,43 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#111111">
+  <meta name="theme-color" content="#0D0D0D">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
   <title>Calendar Update</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@600;700&family=Geist:wght@400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --bg: #fafafa;
-      --card-bg: #ffffff;
-      --border: #222;
-      --text: #111;
-      --text-muted: #888;
-      --accent: #111;
-      --canvas-bg: #fff;
-      --shadow: 0 1px 4px rgba(0,0,0,0.08);
+      --bg: #0D0D0D;
+      --surface: #131313;
+      --surface-container-low: #1c1b1b;
+      --surface-container: #201f1f;
+      --surface-container-high: #2a2a2a;
+      --primary: #6ee591;
+      --primary-container: #50c878;
+      --on-surface: #e5e2e1;
+      --on-surface-variant: #bdcabc;
+      --outline: #879487;
+      --outline-variant: #3e4a3f;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Geist', -apple-system, sans-serif;
       background: var(--bg);
-      color: var(--text);
+      color: var(--on-surface);
       height: 100dvh;
       overflow: hidden;
       touch-action: pan-y;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
 
     .app {
@@ -40,42 +49,103 @@
 
     /* Header */
     .header {
-      padding: 16px 20px 8px;
-      text-align: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 50;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      height: 56px;
+      background: rgba(19, 19, 19, 0.4);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(62, 74, 63, 0.3);
+    }
+
+    .header-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      color: var(--on-surface-variant);
+      cursor: pointer;
+      padding: 8px;
+      transition: color 0.2s;
+    }
+
+    .header-btn:active {
+      color: var(--primary);
     }
 
     .header h1 {
-      font-size: 14px;
-      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
       text-transform: uppercase;
-      letter-spacing: 2px;
-      color: var(--text-muted);
+      letter-spacing: 0.15em;
+      color: var(--on-surface-variant);
     }
 
     /* Progress */
     .progress {
-      display: flex;
-      gap: 6px;
-      padding: 8px 40px;
+      position: fixed;
+      top: 56px;
+      left: 0;
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding: 16px 20px 0;
+      z-index: 40;
     }
 
-    .progress-dot {
-      flex: 1;
-      height: 3px;
-      background: #ddd;
-      border-radius: 2px;
-      transition: background 0.3s;
+    .progress-seg {
+      height: 2px;
+      background: rgba(189, 202, 188, 0.2);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
     }
 
-    .progress-dot.active {
-      background: var(--accent);
+    .progress-seg.active::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--primary);
+      box-shadow: 0 0 10px var(--primary);
     }
 
-    /* Screens container */
+    /* Ambient glow */
+    .ambient {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .ambient::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80vw;
+      height: 80vw;
+      background: rgba(110, 229, 145, 0.04);
+      border-radius: 50%;
+      filter: blur(120px);
+    }
+
+    /* Screens */
     .screens-wrapper {
       flex: 1;
       overflow: hidden;
       position: relative;
+      margin-top: 56px;
     }
 
     .screens {
@@ -91,53 +161,69 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px 24px;
+      padding: 20px 20px;
+      gap: 24px;
     }
 
-    /* Screen content */
     .screen-label {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 24px;
-      letter-spacing: 1px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--on-surface);
     }
 
+    /* Text input */
     .text-input {
       width: 100%;
-      max-width: 320px;
-      padding: 14px 16px;
-      font-size: 18px;
-      border: 2px solid var(--border);
-      background: var(--card-bg);
-      color: var(--text);
+      max-width: 340px;
+      height: 56px;
+      padding: 0 24px;
+      font-size: 16px;
+      font-family: 'Geist', sans-serif;
+      border: 1px solid rgba(62, 74, 63, 0.5);
+      border-radius: 4px;
+      background: rgba(28, 27, 27, 0.4);
+      color: var(--on-surface);
       text-align: center;
       outline: none;
-      font-family: inherit;
+      transition: all 0.3s;
+      position: relative;
     }
 
     .text-input:focus {
-      border-color: #555;
+      border-color: var(--primary);
+      box-shadow: 0 0 8px rgba(110, 229, 145, 0.3);
     }
 
     .text-input::placeholder {
-      color: #bbb;
+      color: rgba(189, 202, 188, 0.4);
     }
 
-    /* Canvas area */
+    /* Canvas */
     .canvas-container {
       width: 100%;
-      max-width: 320px;
+      max-width: 340px;
       aspect-ratio: 4/3;
-      border: 2px solid var(--border);
-      background: var(--canvas-bg);
+      border: 1px solid rgba(62, 74, 63, 0.5);
+      border-radius: 4px;
+      background: rgba(28, 27, 27, 0.4);
+      backdrop-filter: blur(10px);
       position: relative;
       touch-action: none;
+      transition: all 0.3s;
+    }
+
+    .canvas-container.drawing {
+      border-color: var(--primary);
+      box-shadow: 0 0 8px rgba(110, 229, 145, 0.3);
     }
 
     .canvas-container canvas {
       width: 100%;
       height: 100%;
       display: block;
+      border-radius: 3px;
     }
 
     .canvas-placeholder {
@@ -145,10 +231,11 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      color: #ccc;
+      color: rgba(189, 202, 188, 0.35);
+      font-family: 'Geist', sans-serif;
       font-size: 15px;
       text-align: center;
-      line-height: 1.5;
+      line-height: 1.6;
       pointer-events: none;
       transition: opacity 0.2s;
     }
@@ -158,37 +245,45 @@
     }
 
     .recognised-value {
-      margin-top: 12px;
-      font-size: 20px;
-      font-weight: 600;
-      min-height: 28px;
-      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+      font-weight: 500;
+      min-height: 24px;
+      color: var(--primary);
+      text-shadow: 0 0 12px rgba(110, 229, 145, 0.4);
     }
 
     .recognised-value.loading {
-      color: var(--text-muted);
+      color: var(--on-surface-variant);
       font-weight: 400;
-      font-size: 14px;
+      font-size: 13px;
+      text-shadow: none;
     }
 
     .canvas-actions {
-      margin-top: 8px;
       display: flex;
       gap: 12px;
     }
 
     .btn-small {
-      padding: 6px 16px;
-      font-size: 13px;
-      border: 1.5px solid var(--border);
-      background: var(--card-bg);
+      padding: 8px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      border: 1px solid rgba(135, 148, 135, 0.3);
+      border-radius: 2px;
+      background: rgba(51, 51, 51, 0.3);
+      color: var(--on-surface-variant);
       cursor: pointer;
-      font-family: inherit;
-      color: var(--text);
+      transition: all 0.2s;
     }
 
     .btn-small:active {
-      background: #eee;
+      background: rgba(110, 229, 145, 0.1);
+      border-color: var(--primary);
+      color: var(--primary);
     }
 
     /* Navigation */
@@ -196,27 +291,30 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 24px 28px;
+      padding: 16px 20px 28px;
     }
 
     .nav-btn {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 10px 20px;
-      font-size: 14px;
-      font-weight: 600;
-      border: 2px solid var(--border);
-      background: var(--card-bg);
-      cursor: pointer;
-      font-family: inherit;
-      color: var(--text);
+      gap: 8px;
+      padding: 12px 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      border: 1px solid var(--primary);
+      border-radius: 2px;
+      background: var(--surface);
+      color: var(--primary);
+      cursor: pointer;
+      transition: all 0.2s;
     }
 
     .nav-btn:active {
-      background: #eee;
+      background: rgba(110, 229, 145, 0.1);
+      box-shadow: 0 0 15px rgba(110, 229, 145, 0.4);
     }
 
     .nav-btn.hidden {
@@ -224,38 +322,26 @@
     }
 
     .nav-btn.submit {
-      background: var(--accent);
-      color: #fff;
-      border-color: var(--accent);
+      background: var(--primary);
+      color: #003919;
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(110, 229, 145, 0.4);
     }
 
     .nav-btn.submit:active {
-      background: #333;
+      background: var(--primary-container);
     }
 
     .nav-btn .arrow {
-      font-size: 18px;
+      font-size: 16px;
     }
 
     /* Settings overlay */
-    .settings-toggle {
-      position: fixed;
-      top: 12px;
-      right: 12px;
-      width: 36px;
-      height: 36px;
-      border: none;
-      background: transparent;
-      font-size: 20px;
-      cursor: pointer;
-      color: var(--text-muted);
-      z-index: 10;
-    }
-
     .settings-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.4);
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
       z-index: 100;
       display: none;
       align-items: center;
@@ -267,39 +353,57 @@
     }
 
     .settings-panel {
-      background: var(--card-bg);
+      background: rgba(51, 51, 51, 0.4);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(135, 148, 135, 0.2);
+      border-radius: 8px;
       padding: 28px 24px;
       width: 90%;
       max-width: 380px;
       max-height: 80dvh;
       overflow-y: auto;
-      border: 2px solid var(--border);
     }
 
     .settings-panel h2 {
-      font-size: 18px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
       margin-bottom: 20px;
+      color: var(--on-surface);
     }
 
     .settings-panel label {
       display: block;
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--text-muted);
+      margin-bottom: 6px;
+      color: var(--on-surface-variant);
     }
 
     .settings-panel input, .settings-panel select {
       width: 100%;
-      padding: 10px 12px;
-      font-size: 15px;
-      border: 1.5px solid #ccc;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-family: 'Geist', sans-serif;
+      border: 1px solid rgba(62, 74, 63, 0.5);
+      border-radius: 4px;
       margin-bottom: 16px;
-      font-family: inherit;
-      background: var(--bg);
-      color: var(--text);
+      background: rgba(28, 27, 27, 0.6);
+      color: var(--on-surface);
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .settings-panel input:focus, .settings-panel select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 8px rgba(110, 229, 145, 0.3);
+    }
+
+    .settings-panel select option {
+      background: #1c1b1b;
     }
 
     .settings-panel .btn-row {
@@ -310,40 +414,58 @@
 
     .settings-panel .btn-row button {
       flex: 1;
-      padding: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      border: 2px solid var(--border);
+      padding: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      border-radius: 2px;
       cursor: pointer;
-      font-family: inherit;
+      transition: all 0.2s;
     }
 
     .settings-panel .btn-save {
-      background: var(--accent);
-      color: #fff;
+      background: var(--primary);
+      color: #003919;
+      border: 1px solid var(--primary);
+    }
+
+    .settings-panel .btn-save:active {
+      box-shadow: 0 0 15px rgba(110, 229, 145, 0.4);
     }
 
     .settings-panel .btn-cancel {
-      background: var(--card-bg);
-      color: var(--text);
+      background: transparent;
+      color: var(--on-surface-variant);
+      border: 1px solid rgba(135, 148, 135, 0.3);
     }
 
     .settings-panel .btn-google {
       width: 100%;
-      padding: 10px;
-      font-size: 14px;
-      font-weight: 600;
-      border: 2px solid #4285f4;
-      background: #4285f4;
-      color: #fff;
+      padding: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      border: 1px solid var(--primary);
+      border-radius: 2px;
+      background: transparent;
+      color: var(--primary);
       cursor: pointer;
-      font-family: inherit;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
+      transition: all 0.2s;
+    }
+
+    .settings-panel .btn-google:active {
+      background: rgba(110, 229, 145, 0.1);
+      box-shadow: 0 0 15px rgba(110, 229, 145, 0.4);
     }
 
     .settings-panel .btn-google.connected {
-      background: #fff;
-      color: #4285f4;
+      background: rgba(110, 229, 145, 0.1);
+      box-shadow: 0 0 10px rgba(110, 229, 145, 0.2);
     }
 
     /* Toast */
@@ -352,15 +474,21 @@
       bottom: 80px;
       left: 50%;
       transform: translateX(-50%) translateY(20px);
-      background: var(--accent);
-      color: #fff;
+      background: rgba(51, 51, 51, 0.8);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(110, 229, 145, 0.3);
+      border-radius: 4px;
+      color: var(--primary);
       padding: 12px 24px;
-      font-size: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
       font-weight: 500;
+      letter-spacing: 0.05em;
       opacity: 0;
       transition: all 0.3s;
       z-index: 200;
       white-space: nowrap;
+      box-shadow: 0 0 12px rgba(110, 229, 145, 0.2);
     }
 
     .toast.show {
@@ -371,18 +499,24 @@
 </head>
 <body>
   <div class="app">
-    <div class="header">
+    <header class="header">
+      <button class="header-btn" style="visibility:hidden">
+        <span class="material-symbols-outlined">close</span>
+      </button>
       <h1>New Event</h1>
-    </div>
+      <button class="header-btn" onclick="toggleSettings()">
+        <span class="material-symbols-outlined">settings</span>
+      </button>
+    </header>
 
     <div class="progress">
-      <div class="progress-dot active" data-step="0"></div>
-      <div class="progress-dot" data-step="1"></div>
-      <div class="progress-dot" data-step="2"></div>
-      <div class="progress-dot" data-step="3"></div>
+      <div class="progress-seg active" data-step="0"></div>
+      <div class="progress-seg" data-step="1"></div>
+      <div class="progress-seg" data-step="2"></div>
+      <div class="progress-seg" data-step="3"></div>
     </div>
 
-    <button class="settings-toggle" onclick="toggleSettings()">&#9881;</button>
+    <div class="ambient"></div>
 
     <div class="screens-wrapper">
       <div class="screens" id="screens">
@@ -430,10 +564,12 @@
 
     <div class="nav">
       <button class="nav-btn hidden" id="prevBtn" onclick="navigate(-1)">
-        <span class="arrow">&#9664;</span> <span id="prevLabel">Back</span>
+        <span class="material-symbols-outlined arrow">chevron_left</span>
+        <span id="prevLabel">Back</span>
       </button>
       <button class="nav-btn" id="nextBtn" onclick="navigate(1)">
-        <span id="nextLabel">Date</span> <span class="arrow">&#9654;</span>
+        <span id="nextLabel">Date</span>
+        <span class="material-symbols-outlined arrow" id="nextIcon">chevron_right</span>
       </button>
     </div>
   </div>
@@ -472,13 +608,11 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    // ── State ──
     let currentScreen = 0;
     const screenLabels = ['Title', 'Date', 'Time', 'Venue'];
     const canvases = {};
     let googleAccessToken = null;
 
-    // ── Navigation ──
     function navigate(dir) {
       const next = currentScreen + dir;
       if (next < 0 || next > 3) return;
@@ -500,8 +634,8 @@
     function updateUI() {
       document.getElementById('screens').style.transform = `translateX(-${currentScreen * 100}%)`;
 
-      document.querySelectorAll('.progress-dot').forEach((dot, i) => {
-        dot.classList.toggle('active', i <= currentScreen);
+      document.querySelectorAll('.progress-seg').forEach((seg, i) => {
+        seg.classList.toggle('active', i <= currentScreen);
       });
 
       const prevBtn = document.getElementById('prevBtn');
@@ -510,18 +644,18 @@
       prevBtn.classList.toggle('hidden', currentScreen === 0);
       document.getElementById('prevLabel').textContent = screenLabels[currentScreen - 1] || '';
 
+      const nextIcon = document.getElementById('nextIcon');
       if (currentScreen === 3) {
         nextBtn.classList.add('submit');
         document.getElementById('nextLabel').textContent = 'Submit';
-        nextBtn.querySelector('.arrow').textContent = '✓';
+        nextIcon.textContent = 'check';
       } else {
         nextBtn.classList.remove('submit');
         document.getElementById('nextLabel').textContent = screenLabels[currentScreen + 1] || '';
-        nextBtn.querySelector('.arrow').textContent = '▶';
+        nextIcon.textContent = 'chevron_right';
       }
     }
 
-    // ── Canvas Drawing ──
     function initCanvas(name) {
       const container = document.getElementById(`${name}CanvasContainer`);
       const canvas = document.getElementById(`${name}Canvas`);
@@ -535,7 +669,7 @@
         ctx.lineWidth = 3;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        ctx.strokeStyle = '#111';
+        ctx.strokeStyle = '#6ee591';
       }
 
       resize();
@@ -552,6 +686,7 @@
       function start(e) {
         e.preventDefault();
         drawing = true;
+        container.classList.add('drawing');
         const pos = getPos(e);
         ctx.beginPath();
         ctx.moveTo(pos.x, pos.y);
@@ -569,9 +704,10 @@
         }
       }
 
-      function end(e) {
+      function end() {
         if (drawing) {
           drawing = false;
+          container.classList.remove('drawing');
           ctx.closePath();
         }
       }
@@ -585,7 +721,6 @@
       canvas.addEventListener('touchend', end);
 
       canvases[name] = { canvas, ctx, container, resize, hasContent: () => hasContent, reset: () => { hasContent = false; } };
-
       window.addEventListener('resize', resize);
     }
 
@@ -599,7 +734,6 @@
       document.getElementById(`${name}Value`).className = 'recognised-value';
     }
 
-    // ── Handwriting Recognition ──
     async function recognise(name) {
       const settings = loadSettings();
       if (!settings.openrouterKey) {
@@ -618,7 +752,6 @@
       valueEl.className = 'recognised-value loading';
 
       const imageData = c.canvas.toDataURL('image/png');
-      const base64 = imageData.split(',')[1];
 
       const prompt = name === 'date'
         ? 'Read the handwritten date in this image. Return ONLY the date in dd/mm/yy format. Nothing else.'
@@ -661,7 +794,6 @@
       }
     }
 
-    // ── Google Calendar ──
     function handleGoogleAuth() {
       const settings = loadSettings();
       if (!settings.googleClientId) {
@@ -734,9 +866,7 @@
         end: { dateTime: endTime.toISOString(), timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
       };
 
-      if (venue) {
-        event.location = venue;
-      }
+      if (venue) event.location = venue;
 
       try {
         showToast('Creating event...');
@@ -792,9 +922,7 @@
         }
 
         return new Date(year, month, day, hours, minutes);
-      } catch {
-        return null;
-      }
+      } catch { return null; }
     }
 
     function resetForm() {
@@ -806,11 +934,9 @@
       updateUI();
     }
 
-    // ── Settings ──
     function loadSettings() {
-      try {
-        return JSON.parse(localStorage.getItem('calendarUpdateSettings') || '{}');
-      } catch { return {}; }
+      try { return JSON.parse(localStorage.getItem('calendarUpdateSettings') || '{}'); }
+      catch { return {}; }
     }
 
     function saveSettings() {
@@ -838,7 +964,6 @@
       overlay.classList.toggle('open');
     }
 
-    // ── Toast ──
     function showToast(msg) {
       const toast = document.getElementById('toast');
       toast.textContent = msg;
@@ -847,7 +972,6 @@
       toast._timeout = setTimeout(() => toast.classList.remove('show'), 2500);
     }
 
-    // ── Swipe ──
     let touchStartX = 0;
     let touchStartY = 0;
 
@@ -866,7 +990,6 @@
       }
     });
 
-    // ── Init ──
     document.addEventListener('DOMContentLoaded', () => {
       initCanvas('date');
       initCanvas('time');
