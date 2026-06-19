@@ -30,11 +30,21 @@
 
     body {
       font-family: 'Geist', -apple-system, sans-serif;
-      background: var(--bg);
+      background: #090909;
       color: var(--on-surface);
       height: 100dvh;
       overflow: hidden;
       touch-action: pan-y;
+    }
+
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
     }
 
     .material-symbols-outlined {
@@ -45,6 +55,8 @@
       height: 100dvh;
       display: flex;
       flex-direction: column;
+      position: relative;
+      z-index: 1;
     }
 
     .header {
@@ -57,7 +69,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 0 20px;
-      height: 56px;
+      height: 72px;
       background: rgba(19, 19, 19, 0.4);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid rgba(62, 74, 63, 0.3);
@@ -88,7 +100,7 @@
 
     #progressBar {
       position: fixed;
-      top: 56px;
+      top: 72px;
       left: 0;
       width: 100%;
       display: flex;
@@ -114,32 +126,12 @@
       box-shadow: 0 0 10px var(--primary);
     }
 
-    .ambient {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: -1;
-      overflow: hidden;
-    }
-
-    .ambient::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 80vw;
-      height: 80vw;
-      background: rgba(110, 229, 145, 0.04);
-      border-radius: 50%;
-      filter: blur(120px);
-    }
 
     .screens-wrapper {
       flex: 1;
       overflow: hidden;
       position: relative;
-      margin-top: 56px;
+      margin-top: 72px;
     }
 
     .screens {
@@ -578,7 +570,7 @@
       <button class="header-btn" style="visibility:hidden">
         <span class="material-symbols-outlined">close</span>
       </button>
-      <h1>New Event</h1>
+      <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbFAhkO1MwWSGOZ78zvayHb4JnZTaN8kfh8h7qytrPHbICBlkk_W06MkUTdzs9WBHH8VymOShj8YXqcMhfjjsOPNOeFMsFwPmDVbIc7l_D7FL4EqCCApVB-MZVRgc_dNpLmq7P0odMKKdXDimH-kxTBjnGRAxfnBGiAWkSJcvL-gXKg_ICqQQBMQjLeG9ak58Jua63OL77Ux5PJYvnvk19DnWDRXjVaF-Ij7B_3IlqOFCVoQVfKfWwS8EJ6M3Rbd_2oYkBI73CYQ0k" alt="Calendar Update" style="height:40px;width:auto;object-fit:contain;">
       <button class="header-btn" onclick="toggleSettings()">
         <span class="material-symbols-outlined">settings</span>
       </button>
@@ -586,7 +578,7 @@
 
     <div id="progressBar"></div>
 
-    <div class="ambient"></div>
+    <canvas id="bg-canvas"></canvas>
 
     <div class="screens-wrapper">
       <div class="screens" id="screens">
@@ -1265,6 +1257,76 @@
       if (googleAccessToken) updateGoogleButton(true);
       if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
     });
+  </script>
+
+  <script id="shader-fragment" type="x-shader/x-fragment">
+    precision highp float;
+    uniform float u_time;
+    uniform vec2 u_resolution;
+
+    void main() {
+      vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+      float time = u_time * 0.5;
+
+      vec3 color1 = vec3(0.02, 0.08, 0.04);
+      vec3 color2 = vec3(0.0, 0.43, 0.21);
+      vec3 color3 = vec3(0.43, 0.90, 0.57);
+
+      float noise = sin(uv.x * 10.0 + time) * cos(uv.y * 10.0 - time) * 0.5 + 0.5;
+      float aurora = sin(uv.x * 3.0 + uv.y * 5.0 + time * 0.8) * 0.5 + 0.5;
+      aurora *= pow(1.0 - uv.y, 1.5);
+
+      vec3 finalColor = mix(color1, color2, aurora);
+      finalColor += color3 * pow(aurora, 8.0) * 0.5;
+
+      gl_FragColor = vec4(finalColor, 1.0);
+    }
+  </script>
+
+  <script>
+    (function() {
+      const c = document.getElementById('bg-canvas');
+      const gl = c.getContext('webgl');
+      if (!gl) return;
+
+      const vs = gl.createShader(gl.VERTEX_SHADER);
+      gl.shaderSource(vs, 'attribute vec2 position;void main(){gl_Position=vec4(position,0.0,1.0);}');
+      gl.compileShader(vs);
+
+      const fs = gl.createShader(gl.FRAGMENT_SHADER);
+      gl.shaderSource(fs, document.getElementById('shader-fragment').text);
+      gl.compileShader(fs);
+
+      const prog = gl.createProgram();
+      gl.attachShader(prog, vs);
+      gl.attachShader(prog, fs);
+      gl.linkProgram(prog);
+      gl.useProgram(prog);
+
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+
+      const pos = gl.getAttribLocation(prog, 'position');
+      gl.enableVertexAttribArray(pos);
+      gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+
+      const tLoc = gl.getUniformLocation(prog, 'u_time');
+      const rLoc = gl.getUniformLocation(prog, 'u_resolution');
+
+      function render(t) {
+        if (c.width !== window.innerWidth || c.height !== window.innerHeight) {
+          c.width = window.innerWidth;
+          c.height = window.innerHeight;
+          gl.viewport(0, 0, c.width, c.height);
+        }
+        gl.uniform1f(tLoc, t * 0.001);
+        gl.uniform2f(rLoc, c.width, c.height);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        requestAnimationFrame(render);
+      }
+      requestAnimationFrame(render);
+    })();
   </script>
 </body>
 </html>
