@@ -612,7 +612,22 @@
           </div>
         </div>
 
-        <!-- 2: Date (Start) -->
+        <!-- 2: Full Day? -->
+        <div class="screen" data-screen="fullDay">
+          <div class="screen-label">Full Day?</div>
+          <div class="radio-group">
+            <div class="radio-option selected" id="fullDayYes" onclick="selectFullDay(true)">
+              <div class="radio-dot"></div>
+              <div class="radio-label">Yes — All day</div>
+            </div>
+            <div class="radio-option" id="fullDayNo" onclick="selectFullDay(false)">
+              <div class="radio-dot"></div>
+              <div class="radio-label">No — Specific times</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3: Date (Start) -->
         <div class="screen" data-screen="dateStart">
           <div class="screen-label" id="dateStartLabel">Date (Start)</div>
           <div class="input-mode-toggle">
@@ -752,22 +767,25 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    const ALL_SCREENS = ['title', 'eventType', 'dateStart', 'dateEnd', 'timeStart', 'timeEnd', 'venue'];
+    const ALL_SCREENS = ['title', 'eventType', 'fullDay', 'dateStart', 'dateEnd', 'timeStart', 'timeEnd', 'venue'];
     const SCREEN_LABELS = {
-      title: 'Title', eventType: 'Event Type', dateStart: 'Date (Start)', dateEnd: 'Date (End)',
+      title: 'Title', eventType: 'Event Type', fullDay: 'Full Day?',
+      dateStart: 'Date (Start)', dateEnd: 'Date (End)',
       timeStart: 'Time (Start)', timeEnd: 'Time (End)', venue: 'Venue'
     };
 
     let eventType = 'single';
+    let isFullDay = true;
     let flowIndex = 0;
     const canvases = {};
     let googleAccessToken = sessionStorage.getItem('googleAccessToken');
 
     function getFlow() {
-      if (eventType === 'multi') {
-        return ['title', 'eventType', 'dateStart', 'dateEnd', 'timeStart', 'timeEnd', 'venue'];
-      }
-      return ['title', 'eventType', 'dateStart', 'timeStart', 'timeEnd', 'venue'];
+      const flow = ['title', 'eventType', 'fullDay', 'dateStart'];
+      if (eventType === 'multi') flow.push('dateEnd');
+      if (!isFullDay) { flow.push('timeStart', 'timeEnd'); }
+      flow.push('venue');
+      return flow;
     }
 
     function currentScreenId() {
@@ -780,9 +798,16 @@
 
     function selectEventType(type) {
       eventType = type;
-      document.querySelectorAll('.radio-option').forEach((opt, i) => {
+      const screen = document.querySelector('[data-screen="eventType"]');
+      screen.querySelectorAll('.radio-option').forEach((opt, i) => {
         opt.classList.toggle('selected', (i === 0 && type === 'single') || (i === 1 && type === 'multi'));
       });
+    }
+
+    function selectFullDay(val) {
+      isFullDay = val;
+      document.getElementById('fullDayYes').classList.toggle('selected', val);
+      document.getElementById('fullDayNo').classList.toggle('selected', !val);
     }
 
     function navigate(dir) {
@@ -1066,8 +1091,6 @@
 
       const title = document.getElementById('titleInput').value.trim();
       const dateStartStr = getFieldValue('dateStart');
-      const timeStartStr = getFieldValue('timeStart');
-      const timeEndStr = getFieldValue('timeEnd');
       const venue = document.getElementById('venueInput').value.trim();
 
       if (!title) { showToast('Title is required'); return; }
@@ -1075,38 +1098,63 @@
       const isInvalid = (v) => !v || v.includes('...') || v.includes('Error') || v.includes('Could not');
 
       if (isInvalid(dateStartStr)) { showToast('Please enter the start date'); return; }
-      if (isInvalid(timeStartStr)) { showToast('Please enter the start time'); return; }
-      if (isInvalid(timeEndStr)) { showToast('Please enter the end time'); return; }
 
       const startDate = parseDate(dateStartStr);
-      const startTime = parseTime(timeStartStr);
-      const endTime = parseTime(timeEndStr);
-
-      if (!startDate || !startTime || !endTime) {
-        showToast('Could not parse date/time');
-        return;
-      }
+      if (!startDate) { showToast('Could not parse start date'); return; }
 
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      let event;
 
-      let endDate;
-      if (eventType === 'multi') {
-        const dateEndStr = getFieldValue('dateEnd');
-        if (isInvalid(dateEndStr)) { showToast('Please enter the end date'); return; }
-        endDate = parseDate(dateEndStr);
-        if (!endDate) { showToast('Could not parse end date'); return; }
+      if (isFullDay) {
+        const startStr = `${startDate.year}-${String(startDate.month + 1).padStart(2, '0')}-${String(startDate.day).padStart(2, '0')}`;
+
+        let endStr;
+        if (eventType === 'multi') {
+          const dateEndStr = getFieldValue('dateEnd');
+          if (isInvalid(dateEndStr)) { showToast('Please enter the end date'); return; }
+          const endDate = parseDate(dateEndStr);
+          if (!endDate) { showToast('Could not parse end date'); return; }
+          const endDT = new Date(endDate.year, endDate.month, endDate.day + 1);
+          endStr = `${endDT.getFullYear()}-${String(endDT.getMonth() + 1).padStart(2, '0')}-${String(endDT.getDate()).padStart(2, '0')}`;
+        } else {
+          const endDT = new Date(startDate.year, startDate.month, startDate.day + 1);
+          endStr = `${endDT.getFullYear()}-${String(endDT.getMonth() + 1).padStart(2, '0')}-${String(endDT.getDate()).padStart(2, '0')}`;
+        }
+
+        event = {
+          summary: title,
+          start: { date: startStr },
+          end: { date: endStr },
+        };
       } else {
-        endDate = startDate;
+        const timeStartStr = getFieldValue('timeStart');
+        const timeEndStr = getFieldValue('timeEnd');
+        if (isInvalid(timeStartStr)) { showToast('Please enter the start time'); return; }
+        if (isInvalid(timeEndStr)) { showToast('Please enter the end time'); return; }
+
+        const startTime = parseTime(timeStartStr);
+        const endTime = parseTime(timeEndStr);
+        if (!startTime || !endTime) { showToast('Could not parse time'); return; }
+
+        let endDate;
+        if (eventType === 'multi') {
+          const dateEndStr = getFieldValue('dateEnd');
+          if (isInvalid(dateEndStr)) { showToast('Please enter the end date'); return; }
+          endDate = parseDate(dateEndStr);
+          if (!endDate) { showToast('Could not parse end date'); return; }
+        } else {
+          endDate = startDate;
+        }
+
+        const startDT = new Date(startDate.year, startDate.month, startDate.day, startTime.hours, startTime.minutes);
+        const endDT = new Date(endDate.year, endDate.month, endDate.day, endTime.hours, endTime.minutes);
+
+        event = {
+          summary: title,
+          start: { dateTime: startDT.toISOString(), timeZone: tz },
+          end: { dateTime: endDT.toISOString(), timeZone: tz },
+        };
       }
-
-      const startDT = new Date(startDate.year, startDate.month, startDate.day, startTime.hours, startTime.minutes);
-      const endDT = new Date(endDate.year, endDate.month, endDate.day, endTime.hours, endTime.minutes);
-
-      const event = {
-        summary: title,
-        start: { dateTime: startDT.toISOString(), timeZone: tz },
-        end: { dateTime: endDT.toISOString(), timeZone: tz },
-      };
 
       if (venue) event.location = venue;
 
@@ -1150,7 +1198,9 @@
         if (typedInput) typedInput.value = '';
       });
       eventType = 'single';
+      isFullDay = true;
       selectEventType('single');
+      selectFullDay(true);
       flowIndex = 0;
       updateUI();
     }
