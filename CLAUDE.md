@@ -17,6 +17,8 @@ A mobile PWA for quickly adding events to Google Calendar with a streamlined mul
 - `manifest.json` — PWA manifest
 - `sw.js` — Service worker (network-first with offline cache fallback)
 - `icon-192.png` / `icon-512.png` — App icons
+- `logo.png` — Header logo (local copy; previously hotlinked from Google Stitch)
+- `SECURITY.md` — Security posture and paid-touchpoint notes
 
 ## Key Design Decisions
 - Dynamic multi-screen flow based on event type and full-day selection
