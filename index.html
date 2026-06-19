@@ -611,7 +611,7 @@
     let currentScreen = 0;
     const screenLabels = ['Title', 'Date', 'Time', 'Venue'];
     const canvases = {};
-    let googleAccessToken = null;
+    let googleAccessToken = sessionStorage.getItem('googleAccessToken');
 
     function navigate(dir) {
       const next = currentScreen + dir;
@@ -813,6 +813,7 @@
       if (hash.includes('access_token')) {
         const params = new URLSearchParams(hash.substring(1));
         googleAccessToken = params.get('access_token');
+        sessionStorage.setItem('googleAccessToken', googleAccessToken);
         window.location.hash = '';
         updateGoogleButton(true);
         showToast('Google Calendar connected');
@@ -831,6 +832,7 @@
     }
 
     async function submitEvent() {
+      console.log('submitEvent called', { googleAccessToken: !!googleAccessToken });
       if (!googleAccessToken) {
         showToast('Connect Google Calendar first');
         toggleSettings();
@@ -886,6 +888,7 @@
           const err = await res.json();
           if (res.status === 401) {
             googleAccessToken = null;
+            sessionStorage.removeItem('googleAccessToken');
             updateGoogleButton(false);
             showToast('Session expired — reconnect Google');
           } else {
@@ -995,6 +998,7 @@
       initCanvas('time');
       updateUI();
       checkAuthRedirect();
+      if (googleAccessToken) updateGoogleButton(true);
 
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js');
