@@ -47,7 +47,6 @@
       flex-direction: column;
     }
 
-    /* Header */
     .header {
       position: fixed;
       top: 0;
@@ -76,9 +75,7 @@
       transition: color 0.2s;
     }
 
-    .header-btn:active {
-      color: var(--primary);
-    }
+    .header-btn:active { color: var(--primary); }
 
     .header h1 {
       font-family: 'JetBrains Mono', monospace;
@@ -89,20 +86,19 @@
       color: var(--on-surface-variant);
     }
 
-    /* Progress */
-    .progress {
+    #progressBar {
       position: fixed;
       top: 56px;
       left: 0;
       width: 100%;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      display: flex;
       gap: 8px;
       padding: 16px 20px 0;
       z-index: 40;
     }
 
     .progress-seg {
+      flex: 1;
       height: 2px;
       background: rgba(189, 202, 188, 0.2);
       position: relative;
@@ -118,7 +114,6 @@
       box-shadow: 0 0 10px var(--primary);
     }
 
-    /* Ambient glow */
     .ambient {
       position: fixed;
       inset: 0;
@@ -140,7 +135,6 @@
       filter: blur(120px);
     }
 
-    /* Screens */
     .screens-wrapper {
       flex: 1;
       overflow: hidden;
@@ -173,7 +167,6 @@
       color: var(--on-surface);
     }
 
-    /* Text input */
     .text-input {
       width: 100%;
       max-width: 340px;
@@ -188,7 +181,6 @@
       text-align: center;
       outline: none;
       transition: all 0.3s;
-      position: relative;
     }
 
     .text-input:focus {
@@ -196,8 +188,69 @@
       box-shadow: 0 0 8px rgba(110, 229, 145, 0.3);
     }
 
-    .text-input::placeholder {
-      color: rgba(189, 202, 188, 0.4);
+    .text-input::placeholder { color: rgba(189, 202, 188, 0.4); }
+
+    /* Radio buttons */
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      max-width: 340px;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+      border: 1px solid rgba(62, 74, 63, 0.5);
+      border-radius: 4px;
+      background: rgba(28, 27, 27, 0.4);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .radio-option:active,
+    .radio-option.selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 8px rgba(110, 229, 145, 0.3);
+    }
+
+    .radio-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid rgba(135, 148, 135, 0.5);
+      position: relative;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .radio-option.selected .radio-dot {
+      border-color: var(--primary);
+    }
+
+    .radio-option.selected .radio-dot::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--primary);
+      box-shadow: 0 0 8px rgba(110, 229, 145, 0.4);
+    }
+
+    .radio-label {
+      font-family: 'Geist', sans-serif;
+      font-size: 16px;
+      color: var(--on-surface);
+    }
+
+    .radio-option.selected .radio-label {
+      color: var(--primary);
     }
 
     /* Canvas */
@@ -240,9 +293,7 @@
       transition: opacity 0.2s;
     }
 
-    .canvas-container.has-content .canvas-placeholder {
-      opacity: 0;
-    }
+    .canvas-container.has-content .canvas-placeholder { opacity: 0; }
 
     .recognised-value {
       font-family: 'JetBrains Mono', monospace;
@@ -328,7 +379,6 @@
       color: var(--primary);
     }
 
-    /* Navigation */
     .nav {
       display: flex;
       justify-content: space-between;
@@ -359,9 +409,7 @@
       box-shadow: 0 0 15px rgba(110, 229, 145, 0.4);
     }
 
-    .nav-btn.hidden {
-      visibility: hidden;
-    }
+    .nav-btn.hidden { visibility: hidden; }
 
     .nav-btn.submit {
       background: var(--primary);
@@ -370,15 +418,9 @@
       box-shadow: 0 0 15px rgba(110, 229, 145, 0.4);
     }
 
-    .nav-btn.submit:active {
-      background: var(--primary-container);
-    }
+    .nav-btn.submit:active { background: var(--primary-container); }
+    .nav-btn .arrow { font-size: 16px; }
 
-    .nav-btn .arrow {
-      font-size: 16px;
-    }
-
-    /* Settings overlay */
     .settings-overlay {
       position: fixed;
       inset: 0;
@@ -390,9 +432,7 @@
       justify-content: center;
     }
 
-    .settings-overlay.open {
-      display: flex;
-    }
+    .settings-overlay.open { display: flex; }
 
     .settings-panel {
       background: rgba(51, 51, 51, 0.4);
@@ -444,9 +484,7 @@
       box-shadow: 0 0 8px rgba(110, 229, 145, 0.3);
     }
 
-    .settings-panel select option {
-      background: #1c1b1b;
-    }
+    .settings-panel select option { background: #1c1b1b; }
 
     .settings-panel .btn-row {
       display: flex;
@@ -471,10 +509,6 @@
       background: var(--primary);
       color: #003919;
       border: 1px solid var(--primary);
-    }
-
-    .settings-panel .btn-save:active {
-      box-shadow: 0 0 15px rgba(110, 229, 145, 0.4);
     }
 
     .settings-panel .btn-cancel {
@@ -510,7 +544,6 @@
       box-shadow: 0 0 10px rgba(110, 229, 145, 0.2);
     }
 
-    /* Toast */
     .toast {
       position: fixed;
       bottom: 80px;
@@ -551,74 +584,132 @@
       </button>
     </header>
 
-    <div class="progress">
-      <div class="progress-seg active" data-step="0"></div>
-      <div class="progress-seg" data-step="1"></div>
-      <div class="progress-seg" data-step="2"></div>
-      <div class="progress-seg" data-step="3"></div>
-    </div>
+    <div id="progressBar"></div>
 
     <div class="ambient"></div>
 
     <div class="screens-wrapper">
       <div class="screens" id="screens">
-        <!-- Title -->
-        <div class="screen">
+
+        <!-- 0: Title -->
+        <div class="screen" data-screen="title">
           <div class="screen-label">Title</div>
           <input class="text-input" id="titleInput" type="text" placeholder="Type title here" autocomplete="off">
         </div>
 
-        <!-- Date -->
-        <div class="screen">
-          <div class="screen-label">Date</div>
-          <div class="input-mode-toggle">
-            <button class="toggle-btn active" onclick="setInputMode('date','handwrite')">Write</button>
-            <button class="toggle-btn" onclick="setInputMode('date','type')">Type</button>
+        <!-- 1: Event Type -->
+        <div class="screen" data-screen="eventType">
+          <div class="screen-label">Event Type</div>
+          <div class="radio-group">
+            <div class="radio-option selected" onclick="selectEventType('single')">
+              <div class="radio-dot"></div>
+              <div class="radio-label">Single-day event</div>
+            </div>
+            <div class="radio-option" onclick="selectEventType('multi')">
+              <div class="radio-dot"></div>
+              <div class="radio-label">Multi-day event</div>
+            </div>
           </div>
-          <div class="handwrite-mode active" id="dateHandwrite">
-            <div class="canvas-container" id="dateCanvasContainer">
-              <canvas id="dateCanvas"></canvas>
+        </div>
+
+        <!-- 2: Date (Start) -->
+        <div class="screen" data-screen="dateStart">
+          <div class="screen-label" id="dateStartLabel">Date (Start)</div>
+          <div class="input-mode-toggle">
+            <button class="toggle-btn active" onclick="setInputMode('dateStart','handwrite')">Write</button>
+            <button class="toggle-btn" onclick="setInputMode('dateStart','type')">Type</button>
+          </div>
+          <div class="handwrite-mode active" id="dateStartHandwrite">
+            <div class="canvas-container" id="dateStartCanvasContainer">
+              <canvas id="dateStartCanvas"></canvas>
               <div class="canvas-placeholder">Write date here<br>(dd/mm/yy)</div>
             </div>
-            <div class="recognised-value" id="dateValue"></div>
+            <div class="recognised-value" id="dateStartValue"></div>
             <div class="canvas-actions">
-              <button class="btn-small" onclick="clearCanvas('date')">Clear</button>
-              <button class="btn-small" onclick="recognise('date')">Recognise</button>
+              <button class="btn-small" onclick="clearCanvas('dateStart')">Clear</button>
+              <button class="btn-small" onclick="recognise('dateStart')">Recognise</button>
             </div>
           </div>
-          <div class="type-mode" id="dateType">
-            <input class="text-input" id="dateTypedInput" type="text" placeholder="dd/mm/yy" autocomplete="off">
+          <div class="type-mode" id="dateStartType">
+            <input class="text-input" id="dateStartTypedInput" type="text" placeholder="dd/mm/yy" autocomplete="off">
           </div>
         </div>
 
-        <!-- Time -->
-        <div class="screen">
-          <div class="screen-label">Time</div>
+        <!-- 3: Date (End) — only for multi-day -->
+        <div class="screen" data-screen="dateEnd">
+          <div class="screen-label">Date (End)</div>
           <div class="input-mode-toggle">
-            <button class="toggle-btn active" onclick="setInputMode('time','handwrite')">Write</button>
-            <button class="toggle-btn" onclick="setInputMode('time','type')">Type</button>
+            <button class="toggle-btn active" onclick="setInputMode('dateEnd','handwrite')">Write</button>
+            <button class="toggle-btn" onclick="setInputMode('dateEnd','type')">Type</button>
           </div>
-          <div class="handwrite-mode active" id="timeHandwrite">
-            <div class="canvas-container" id="timeCanvasContainer">
-              <canvas id="timeCanvas"></canvas>
-              <div class="canvas-placeholder">Write time here<br>(hh:mm am/pm)</div>
+          <div class="handwrite-mode active" id="dateEndHandwrite">
+            <div class="canvas-container" id="dateEndCanvasContainer">
+              <canvas id="dateEndCanvas"></canvas>
+              <div class="canvas-placeholder">Write end date here<br>(dd/mm/yy)</div>
             </div>
-            <div class="recognised-value" id="timeValue"></div>
+            <div class="recognised-value" id="dateEndValue"></div>
             <div class="canvas-actions">
-              <button class="btn-small" onclick="clearCanvas('time')">Clear</button>
-              <button class="btn-small" onclick="recognise('time')">Recognise</button>
+              <button class="btn-small" onclick="clearCanvas('dateEnd')">Clear</button>
+              <button class="btn-small" onclick="recognise('dateEnd')">Recognise</button>
             </div>
           </div>
-          <div class="type-mode" id="timeType">
-            <input class="text-input" id="timeTypedInput" type="text" placeholder="hh:mm am/pm" autocomplete="off">
+          <div class="type-mode" id="dateEndType">
+            <input class="text-input" id="dateEndTypedInput" type="text" placeholder="dd/mm/yy" autocomplete="off">
           </div>
         </div>
 
-        <!-- Venue -->
-        <div class="screen">
+        <!-- 4: Time (Start) -->
+        <div class="screen" data-screen="timeStart">
+          <div class="screen-label">Time (Start)</div>
+          <div class="input-mode-toggle">
+            <button class="toggle-btn active" onclick="setInputMode('timeStart','handwrite')">Write</button>
+            <button class="toggle-btn" onclick="setInputMode('timeStart','type')">Type</button>
+          </div>
+          <div class="handwrite-mode active" id="timeStartHandwrite">
+            <div class="canvas-container" id="timeStartCanvasContainer">
+              <canvas id="timeStartCanvas"></canvas>
+              <div class="canvas-placeholder">Write start time here<br>(hh:mm am/pm)</div>
+            </div>
+            <div class="recognised-value" id="timeStartValue"></div>
+            <div class="canvas-actions">
+              <button class="btn-small" onclick="clearCanvas('timeStart')">Clear</button>
+              <button class="btn-small" onclick="recognise('timeStart')">Recognise</button>
+            </div>
+          </div>
+          <div class="type-mode" id="timeStartType">
+            <input class="text-input" id="timeStartTypedInput" type="text" placeholder="hh:mm am/pm" autocomplete="off">
+          </div>
+        </div>
+
+        <!-- 5: Time (End) -->
+        <div class="screen" data-screen="timeEnd">
+          <div class="screen-label">Time (End)</div>
+          <div class="input-mode-toggle">
+            <button class="toggle-btn active" onclick="setInputMode('timeEnd','handwrite')">Write</button>
+            <button class="toggle-btn" onclick="setInputMode('timeEnd','type')">Type</button>
+          </div>
+          <div class="handwrite-mode active" id="timeEndHandwrite">
+            <div class="canvas-container" id="timeEndCanvasContainer">
+              <canvas id="timeEndCanvas"></canvas>
+              <div class="canvas-placeholder">Write end time here<br>(hh:mm am/pm)</div>
+            </div>
+            <div class="recognised-value" id="timeEndValue"></div>
+            <div class="canvas-actions">
+              <button class="btn-small" onclick="clearCanvas('timeEnd')">Clear</button>
+              <button class="btn-small" onclick="recognise('timeEnd')">Recognise</button>
+            </div>
+          </div>
+          <div class="type-mode" id="timeEndType">
+            <input class="text-input" id="timeEndTypedInput" type="text" placeholder="hh:mm am/pm" autocomplete="off">
+          </div>
+        </div>
+
+        <!-- 6: Venue -->
+        <div class="screen" data-screen="venue">
           <div class="screen-label">Venue</div>
           <input class="text-input" id="venueInput" type="text" placeholder="Type venue here (optional)" autocomplete="off">
         </div>
+
       </div>
     </div>
 
@@ -628,7 +719,7 @@
         <span id="prevLabel">Back</span>
       </button>
       <button class="nav-btn" id="nextBtn" onclick="navigate(1)">
-        <span id="nextLabel">Date</span>
+        <span id="nextLabel">Type</span>
         <span class="material-symbols-outlined arrow" id="nextIcon">chevron_right</span>
       </button>
     </div>
@@ -638,14 +729,9 @@
   <div class="settings-overlay" id="settingsOverlay">
     <div class="settings-panel">
       <h2>Settings</h2>
-
-      <button class="btn-google" id="googleAuthBtn" onclick="handleGoogleAuth()">
-        Connect Google Calendar
-      </button>
-
+      <button class="btn-google" id="googleAuthBtn" onclick="handleGoogleAuth()">Connect Google Calendar</button>
       <label>OpenRouter API Key</label>
       <input type="password" id="openrouterKey" placeholder="sk-or-...">
-
       <label>Vision Model</label>
       <select id="visionModel">
         <option value="anthropic/claude-sonnet-4">Claude Sonnet 4</option>
@@ -654,10 +740,8 @@
         <option value="openai/gpt-4o">GPT-4o</option>
         <option value="google/gemini-flash-1.5">Gemini Flash</option>
       </select>
-
       <label>Google Client ID</label>
       <input type="text" id="googleClientId" placeholder="xxxxx.apps.googleusercontent.com">
-
       <div class="btn-row">
         <button class="btn-cancel" onclick="toggleSettings()">Cancel</button>
         <button class="btn-save" onclick="saveSettings()">Save</button>
@@ -668,65 +752,105 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    let currentScreen = 0;
-    const screenLabels = ['Title', 'Date', 'Time', 'Venue'];
+    const ALL_SCREENS = ['title', 'eventType', 'dateStart', 'dateEnd', 'timeStart', 'timeEnd', 'venue'];
+    const SCREEN_LABELS = {
+      title: 'Title', eventType: 'Event Type', dateStart: 'Date (Start)', dateEnd: 'Date (End)',
+      timeStart: 'Time (Start)', timeEnd: 'Time (End)', venue: 'Venue'
+    };
+
+    let eventType = 'single';
+    let flowIndex = 0;
     const canvases = {};
     let googleAccessToken = sessionStorage.getItem('googleAccessToken');
 
+    function getFlow() {
+      if (eventType === 'multi') {
+        return ['title', 'eventType', 'dateStart', 'dateEnd', 'timeStart', 'timeEnd', 'venue'];
+      }
+      return ['title', 'eventType', 'dateStart', 'timeStart', 'timeEnd', 'venue'];
+    }
+
+    function currentScreenId() {
+      return getFlow()[flowIndex];
+    }
+
+    function screenDomIndex(screenId) {
+      return ALL_SCREENS.indexOf(screenId);
+    }
+
+    function selectEventType(type) {
+      eventType = type;
+      document.querySelectorAll('.radio-option').forEach((opt, i) => {
+        opt.classList.toggle('selected', (i === 0 && type === 'single') || (i === 1 && type === 'multi'));
+      });
+    }
+
     function navigate(dir) {
-      if (dir === 1 && currentScreen === 0) {
+      const flow = getFlow();
+      const screenId = currentScreenId();
+
+      if (dir === 1 && screenId === 'title') {
         const title = document.getElementById('titleInput').value.trim();
         if (!title) { showToast('Please enter a title'); return; }
       }
 
-      if (dir === 1 && currentScreen === 3) {
+      if (dir === 1 && screenId === 'venue') {
         submitEvent();
         return;
       }
 
-      const next = currentScreen + dir;
-      if (next < 0 || next > 3) return;
+      const next = flowIndex + dir;
+      if (next < 0 || next >= flow.length) return;
 
-      currentScreen = next;
+      flowIndex = next;
       updateUI();
     }
 
     function updateUI() {
-      document.getElementById('screens').style.transform = `translateX(-${currentScreen * 100}%)`;
+      const flow = getFlow();
+      const screenId = currentScreenId();
+      const domIdx = screenDomIndex(screenId);
 
-      document.querySelectorAll('.progress-seg').forEach((seg, i) => {
-        seg.classList.toggle('active', i <= currentScreen);
-      });
+      document.getElementById('screens').style.transform = `translateX(-${domIdx * 100}%)`;
 
+      // Progress bar
+      const bar = document.getElementById('progressBar');
+      bar.innerHTML = '';
+      for (let i = 0; i < flow.length; i++) {
+        const seg = document.createElement('div');
+        seg.className = 'progress-seg' + (i <= flowIndex ? ' active' : '');
+        bar.appendChild(seg);
+      }
+
+      // Nav buttons
       const prevBtn = document.getElementById('prevBtn');
       const nextBtn = document.getElementById('nextBtn');
 
-      prevBtn.classList.toggle('hidden', currentScreen === 0);
-      document.getElementById('prevLabel').textContent = screenLabels[currentScreen - 1] || '';
+      prevBtn.classList.toggle('hidden', flowIndex === 0);
+      if (flowIndex > 0) {
+        document.getElementById('prevLabel').textContent = SCREEN_LABELS[flow[flowIndex - 1]] || '';
+      }
 
       const nextIcon = document.getElementById('nextIcon');
-      if (currentScreen === 3) {
+      if (screenId === 'venue') {
         nextBtn.classList.add('submit');
         document.getElementById('nextLabel').textContent = 'Submit';
         nextIcon.textContent = 'check';
       } else {
         nextBtn.classList.remove('submit');
-        document.getElementById('nextLabel').textContent = screenLabels[currentScreen + 1] || '';
+        document.getElementById('nextLabel').textContent = SCREEN_LABELS[flow[flowIndex + 1]] || '';
         nextIcon.textContent = 'chevron_right';
       }
     }
 
-    const inputModes = { date: 'handwrite', time: 'handwrite' };
+    const inputModes = { dateStart: 'handwrite', dateEnd: 'handwrite', timeStart: 'handwrite', timeEnd: 'handwrite' };
 
     function setInputMode(field, mode) {
       inputModes[field] = mode;
-      const handwrite = document.getElementById(`${field}Handwrite`);
-      const type = document.getElementById(`${field}Type`);
-      handwrite.classList.toggle('active', mode === 'handwrite');
-      type.classList.toggle('active', mode === 'type');
-
-      const toggleContainer = handwrite.closest('.screen').querySelector('.input-mode-toggle');
-      toggleContainer.querySelectorAll('.toggle-btn').forEach(btn => {
+      document.getElementById(`${field}Handwrite`).classList.toggle('active', mode === 'handwrite');
+      document.getElementById(`${field}Type`).classList.toggle('active', mode === 'type');
+      const screen = document.querySelector(`[data-screen="${field}"]`);
+      screen.querySelectorAll('.toggle-btn').forEach(btn => {
         btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === (mode === 'handwrite' ? 'write' : 'type'));
       });
     }
@@ -740,11 +864,13 @@
 
     function initCanvas(name) {
       const container = document.getElementById(`${name}CanvasContainer`);
+      if (!container) return;
       const canvas = document.getElementById(`${name}Canvas`);
       const ctx = canvas.getContext('2d');
 
       function resize() {
         const rect = container.getBoundingClientRect();
+        if (rect.width === 0) return;
         canvas.width = rect.width * window.devicePixelRatio;
         canvas.height = rect.height * window.devicePixelRatio;
         ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
@@ -808,6 +934,7 @@
 
     function clearCanvas(name) {
       const c = canvases[name];
+      if (!c) return;
       const rect = c.container.getBoundingClientRect();
       c.ctx.clearRect(0, 0, rect.width, rect.height);
       c.container.classList.remove('has-content');
@@ -824,8 +951,8 @@
       }
 
       const c = canvases[name];
-      if (!c.hasContent()) {
-        showToast(`Write the ${name} first`);
+      if (!c || !c.hasContent()) {
+        showToast('Write something first');
         return;
       }
 
@@ -835,7 +962,8 @@
 
       const imageData = c.canvas.toDataURL('image/png');
 
-      const prompt = name === 'date'
+      const isDate = name.startsWith('date');
+      const prompt = isDate
         ? 'Read the handwritten date in this image. Return ONLY the date in dd/mm/yy format. Nothing else.'
         : 'Read the handwritten time in this image. Return ONLY the time in hh:mm am/pm format (e.g. 2:30 pm). Nothing else.';
 
@@ -848,13 +976,10 @@
           },
           body: JSON.stringify({
             model: settings.visionModel || 'anthropic/claude-sonnet-4',
-            messages: [{
-              role: 'user',
-              content: [
-                { type: 'text', text: prompt },
-                { type: 'image_url', image_url: { url: imageData } }
-              ]
-            }],
+            messages: [{ role: 'user', content: [
+              { type: 'text', text: prompt },
+              { type: 'image_url', image_url: { url: imageData } }
+            ]}],
             max_tokens: 30,
           })
         });
@@ -882,11 +1007,9 @@
         showToast('Set Google Client ID in settings first');
         return;
       }
-
       const redirectUri = window.location.origin + window.location.pathname;
       const scope = 'https://www.googleapis.com/auth/calendar.events';
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(settings.googleClientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}&prompt=consent`;
-
       window.location.href = authUrl;
     }
 
@@ -913,8 +1036,28 @@
       }
     }
 
+    function parseDate(str) {
+      const m = str.match(/(\d{1,2})\D(\d{1,2})\D(\d{2,4})/);
+      if (!m) return null;
+      let [, day, month, year] = m;
+      day = parseInt(day); month = parseInt(month) - 1; year = parseInt(year);
+      if (year < 100) year += 2000;
+      return { day, month, year };
+    }
+
+    function parseTime(str) {
+      const m = str.match(/(\d{1,2})\D(\d{2})\s*(am|pm)?/i);
+      if (!m) return null;
+      let [, hours, minutes, ampm] = m;
+      hours = parseInt(hours); minutes = parseInt(minutes);
+      if (ampm) {
+        if (ampm.toLowerCase() === 'pm' && hours !== 12) hours += 12;
+        if (ampm.toLowerCase() === 'am' && hours === 12) hours = 0;
+      }
+      return { hours, minutes };
+    }
+
     async function submitEvent() {
-      console.log('submitEvent called', { googleAccessToken: !!googleAccessToken });
       if (!googleAccessToken) {
         showToast('Connect Google Calendar first');
         toggleSettings();
@@ -922,32 +1065,47 @@
       }
 
       const title = document.getElementById('titleInput').value.trim();
-      const dateStr = getFieldValue('date');
-      const timeStr = getFieldValue('time');
+      const dateStartStr = getFieldValue('dateStart');
+      const timeStartStr = getFieldValue('timeStart');
+      const timeEndStr = getFieldValue('timeEnd');
       const venue = document.getElementById('venueInput').value.trim();
 
       if (!title) { showToast('Title is required'); return; }
-      if (!dateStr || dateStr.includes('...') || dateStr.includes('Error')) {
-        showToast('Please recognise the date first');
-        return;
-      }
-      if (!timeStr || timeStr.includes('...') || timeStr.includes('Error')) {
-        showToast('Please recognise the time first');
-        return;
-      }
 
-      const dateTime = parseDateTime(dateStr, timeStr);
-      if (!dateTime) {
+      const isInvalid = (v) => !v || v.includes('...') || v.includes('Error') || v.includes('Could not');
+
+      if (isInvalid(dateStartStr)) { showToast('Please enter the start date'); return; }
+      if (isInvalid(timeStartStr)) { showToast('Please enter the start time'); return; }
+      if (isInvalid(timeEndStr)) { showToast('Please enter the end time'); return; }
+
+      const startDate = parseDate(dateStartStr);
+      const startTime = parseTime(timeStartStr);
+      const endTime = parseTime(timeEndStr);
+
+      if (!startDate || !startTime || !endTime) {
         showToast('Could not parse date/time');
         return;
       }
 
-      const endTime = new Date(dateTime.getTime() + 60 * 60 * 1000);
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+      let endDate;
+      if (eventType === 'multi') {
+        const dateEndStr = getFieldValue('dateEnd');
+        if (isInvalid(dateEndStr)) { showToast('Please enter the end date'); return; }
+        endDate = parseDate(dateEndStr);
+        if (!endDate) { showToast('Could not parse end date'); return; }
+      } else {
+        endDate = startDate;
+      }
+
+      const startDT = new Date(startDate.year, startDate.month, startDate.day, startTime.hours, startTime.minutes);
+      const endDT = new Date(endDate.year, endDate.month, endDate.day, endTime.hours, endTime.minutes);
 
       const event = {
         summary: title,
-        start: { dateTime: dateTime.toISOString(), timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
-        end: { dateTime: endTime.toISOString(), timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
+        start: { dateTime: startDT.toISOString(), timeZone: tz },
+        end: { dateTime: endDT.toISOString(), timeZone: tz },
       };
 
       if (venue) event.location = venue;
@@ -983,39 +1141,17 @@
       }
     }
 
-    function parseDateTime(dateStr, timeStr) {
-      try {
-        const dateParts = dateStr.match(/(\d{1,2})\D(\d{1,2})\D(\d{2,4})/);
-        if (!dateParts) return null;
-
-        let [, day, month, year] = dateParts;
-        day = parseInt(day);
-        month = parseInt(month) - 1;
-        year = parseInt(year);
-        if (year < 100) year += 2000;
-
-        const timeMatch = timeStr.match(/(\d{1,2})\D(\d{2})\s*(am|pm)?/i);
-        if (!timeMatch) return null;
-
-        let [, hours, minutes, ampm] = timeMatch;
-        hours = parseInt(hours);
-        minutes = parseInt(minutes);
-
-        if (ampm) {
-          if (ampm.toLowerCase() === 'pm' && hours !== 12) hours += 12;
-          if (ampm.toLowerCase() === 'am' && hours === 12) hours = 0;
-        }
-
-        return new Date(year, month, day, hours, minutes);
-      } catch { return null; }
-    }
-
     function resetForm() {
       document.getElementById('titleInput').value = '';
       document.getElementById('venueInput').value = '';
-      clearCanvas('date');
-      clearCanvas('time');
-      currentScreen = 0;
+      ['dateStart', 'dateEnd', 'timeStart', 'timeEnd'].forEach(f => {
+        clearCanvas(f);
+        const typedInput = document.getElementById(`${f}TypedInput`);
+        if (typedInput) typedInput.value = '';
+      });
+      eventType = 'single';
+      selectEventType('single');
+      flowIndex = 0;
       updateUI();
     }
 
@@ -1057,15 +1193,12 @@
       toast._timeout = setTimeout(() => toast.classList.remove('show'), 2500);
     }
 
-    let touchStartX = 0;
-    let touchStartY = 0;
-
+    let touchStartX = 0, touchStartY = 0;
     document.querySelector('.screens-wrapper').addEventListener('touchstart', (e) => {
       if (e.target.tagName === 'CANVAS') return;
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
     });
-
     document.querySelector('.screens-wrapper').addEventListener('touchend', (e) => {
       if (e.target.tagName === 'CANVAS') return;
       const dx = e.changedTouches[0].clientX - touchStartX;
@@ -1076,15 +1209,11 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-      initCanvas('date');
-      initCanvas('time');
+      ['dateStart', 'dateEnd', 'timeStart', 'timeEnd'].forEach(initCanvas);
       updateUI();
       checkAuthRedirect();
       if (googleAccessToken) updateGoogleButton(true);
-
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js');
-      }
+      if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
     });
   </script>
 </body>
