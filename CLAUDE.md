@@ -19,11 +19,13 @@ A mobile PWA for quickly adding events to Google Calendar with a streamlined mul
 - `icon-192.png` / `icon-512.png` — App icons
 
 ## Key Design Decisions
-- Multi-screen swipeable form: Title (typed) → Date → Time → Venue (typed) → Submit
+- Dynamic multi-screen flow based on event type and full-day selection
+- Event type: Single-day or Multi-day
+- Full-day option: skips time screens, uses Google Calendar all-day (`date`) format
 - Date and time screens have a Write/Type toggle (handwriting canvas or typed input)
 - Handwriting recognition via OpenRouter vision API (cheap, accurate, simple to implement)
-- Dark glassmorphic UI theme (designed via Google Stitch): emerald accents, Space Grotesk/JetBrains Mono/Geist fonts
+- Dark glassmorphic UI theme (designed via Google Stitch): animated WebGL aurora shader background, emerald accents, Space Grotesk/JetBrains Mono/Geist fonts
+- Logo image in header (hotlinked from Google Stitch)
 - Location/venue field is optional
 - All API keys stored in localStorage; Google access token in sessionStorage
-- Default event duration: 1 hour
 - Date format: dd/mm/yy; Time format: hh:mm am/pm
