@@ -39,9 +39,9 @@ A mobile PWA for quickly adding events to Google Calendar. Built because the def
 ## Tech Stack
 
 - Vanilla HTML/CSS/JS (single file, no build step)
-- Google Calendar API (OAuth2 implicit flow)
+- Google Calendar API (OAuth2 implicit flow, with `state` CSRF protection)
 - OpenRouter API (vision models for handwriting recognition)
-- GitHub Pages (hosting)
+- GitHub Pages hosting, deployed via a GitHub Actions workflow
 
 ## Security & Cost
 
