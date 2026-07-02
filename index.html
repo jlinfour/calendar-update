@@ -1131,7 +1131,9 @@
       }
       const redirectUri = window.location.origin + window.location.pathname;
       const scope = 'https://www.googleapis.com/auth/calendar.events';
-      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(settings.googleClientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}&prompt=consent`;
+      const state = crypto.randomUUID();
+      sessionStorage.setItem('oauthState', state);
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(settings.googleClientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}&prompt=consent&state=${encodeURIComponent(state)}`;
       window.location.href = authUrl;
     }
 
@@ -1139,9 +1141,19 @@
       const hash = window.location.hash;
       if (hash.includes('access_token')) {
         const params = new URLSearchParams(hash.substring(1));
+        // Remove the token-bearing URL from the address bar and history
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+
+        // Reject tokens that don't match the state we generated (login CSRF)
+        const expectedState = sessionStorage.getItem('oauthState');
+        sessionStorage.removeItem('oauthState');
+        if (!expectedState || params.get('state') !== expectedState) {
+          showToast('Sign-in rejected — please reconnect from Settings');
+          return;
+        }
+
         googleAccessToken = params.get('access_token');
         sessionStorage.setItem('googleAccessToken', googleAccessToken);
-        window.location.hash = '';
         updateGoogleButton(true);
         showToast('Google Calendar connected');
       }
