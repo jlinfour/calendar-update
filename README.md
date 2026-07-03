@@ -45,4 +45,4 @@ A mobile PWA for quickly adding events to Google Calendar. Built because the def
 
 ## Security & Cost
 
-The repo contains only static code — no secrets. API keys stay in your browser (`localStorage`), and your Google token in `sessionStorage`; neither is ever sent to GitHub. The only paid touchpoint is the OpenRouter call made when you tap **Recognise** (fractions of a cent; using **Type** instead costs nothing). It's recommended to set a credit limit on your OpenRouter key. See [SECURITY.md](SECURITY.md) for full details.
+The repo contains only static code — no secrets. API keys stay in your browser (`localStorage`), and your Google token in `sessionStorage`; neither is ever sent to GitHub. The only paid touchpoint is the OpenRouter call made when you tap **Recognise** (fractions of a cent; using **Type** instead costs nothing). It's recommended to set a credit limit on your OpenRouter key.
