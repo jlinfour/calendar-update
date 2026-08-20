@@ -186,6 +186,25 @@
 
     .text-input::placeholder { color: rgba(189, 202, 188, 0.4); }
 
+    .category-hint {
+      font-family: 'Geist', sans-serif;
+      font-size: 12px;
+      color: var(--on-surface-variant);
+      opacity: 0.7;
+      margin-top: -6px;
+      margin-bottom: -14px;
+    }
+
+    /* Compact variant for the optional category list — roughly a quarter
+       shorter than the full-size radio group used on the other screens */
+    .radio-group.compact { gap: 6px; }
+    .radio-group.compact .radio-option { padding: 7px 14px; gap: 10px; }
+    .radio-group.compact .radio-dot { width: 16px; height: 16px; }
+    .radio-group.compact .radio-option.selected .radio-dot::after {
+      top: 2px; left: 2px; width: 8px; height: 8px;
+    }
+    .radio-group.compact .radio-label { font-size: 14px; }
+
     /* Radio buttons */
     .radio-group {
       display: flex;
@@ -575,6 +594,10 @@
       overflow-y: auto;
     }
 
+    /* Title screen carries the extra category list — let it scroll if the
+       on-screen keyboard squeezes the viewport */
+    .screen[data-screen="title"] { overflow-y: auto; }
+
     .confirm-summary {
       width: 100%;
       max-width: 340px;
@@ -681,6 +704,21 @@
         <div class="screen" data-screen="title">
           <div class="screen-label">Title</div>
           <input class="text-input" id="titleInput" type="text" placeholder="Type title here" autocomplete="off">
+          <div class="category-hint">Category (optional — tap again to clear)</div>
+          <div class="radio-group compact" id="titleCategoryGroup">
+            <div class="radio-option" data-category="Appointment" onclick="selectTitleCategory('Appointment')">
+              <div class="radio-dot"></div>
+              <div class="radio-label">Appointment</div>
+            </div>
+            <div class="radio-option" data-category="Meeting" onclick="selectTitleCategory('Meeting')">
+              <div class="radio-dot"></div>
+              <div class="radio-label">Meeting</div>
+            </div>
+            <div class="radio-option" data-category="Reminder" onclick="selectTitleCategory('Reminder')">
+              <div class="radio-dot"></div>
+              <div class="radio-label">Reminder</div>
+            </div>
+          </div>
         </div>
 
         <!-- 1: Event Type -->
@@ -875,6 +913,7 @@
     };
 
     let eventType = 'single';
+    let titleCategory = null;
     let isFullDay = true;
     let flowIndex = 0;
     const canvases = {};
@@ -894,6 +933,20 @@
 
     function screenDomIndex(screenId) {
       return ALL_SCREENS.indexOf(screenId);
+    }
+
+    function selectTitleCategory(cat) {
+      // Tapping the selected option again clears it — the category is optional
+      titleCategory = titleCategory === cat ? null : cat;
+      document.querySelectorAll('#titleCategoryGroup .radio-option').forEach(opt => {
+        opt.classList.toggle('selected', opt.dataset.category === titleCategory);
+      });
+    }
+
+    function getEventTitle() {
+      const title = document.getElementById('titleInput').value.trim();
+      if (!title) return '';
+      return titleCategory ? `[${titleCategory}] ${title}` : title;
     }
 
     function selectEventType(type) {
@@ -1196,7 +1249,7 @@
     }
 
     async function populateConfirmScreen() {
-      const title = document.getElementById('titleInput').value.trim();
+      const title = getEventTitle();
       const venue = document.getElementById('venueInput').value.trim();
       const dateStartStr = getFieldValue('dateStart');
       const dateEndStr = eventType === 'multi' ? getFieldValue('dateEnd') : null;
@@ -1346,7 +1399,7 @@
         return;
       }
 
-      const title = document.getElementById('titleInput').value.trim();
+      const title = getEventTitle();
       const dateStartStr = getFieldValue('dateStart');
       const venue = document.getElementById('venueInput').value.trim();
 
@@ -1456,6 +1509,8 @@
       });
       eventType = 'single';
       isFullDay = true;
+      titleCategory = null;
+      document.querySelectorAll('#titleCategoryGroup .radio-option').forEach(opt => opt.classList.remove('selected'));
       selectEventType('single');
       selectFullDay(true);
       flowIndex = 0;

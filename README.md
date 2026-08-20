@@ -5,6 +5,7 @@ A mobile PWA for quickly adding events to Google Calendar. Built because the def
 ## Features
 
 - **Dynamic multi-step form**: Flow adapts based on event type (single/multi-day) and full-day selection
+- **Optional category tag**: Tag a title as Appointment, Meeting, or Reminder — the event is created as `[Appointment] Hair Treatment`
 - **Single-day & multi-day events**: With optional start/end date and time screens
 - **All-day events**: Skips time screens, creates all-day events on Google Calendar
 - **Write or type**: Toggle between handwriting canvas and typed input for date/time
@@ -26,7 +27,7 @@ A mobile PWA for quickly adding events to Google Calendar. Built because the def
 
 ## How It Works
 
-1. Type the event title
+1. Type the event title, and optionally tag it as Appointment / Meeting / Reminder (tap the selected one again to clear it)
 2. Select event type (single-day or multi-day)
 3. Choose full-day or specific times
 4. Enter start date (dd/mm/yy) — write on canvas or type directly
