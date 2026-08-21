@@ -6,6 +6,15 @@
        Other resource types (fonts, styles, images) are intentionally left
        unrestricted by not setting default-src. -->
   <meta http-equiv="Content-Security-Policy" content="connect-src 'self' https://www.googleapis.com https://openrouter.ai">
+  <script>
+    // Clickjacking guard. GitHub Pages sends no X-Frame-Options, and CSP
+    // frame-ancestors is ignored in a <meta> tag, so this is the only lever
+    // available: hide the page if framed, and try to break out.
+    if (window.self !== window.top) {
+      document.documentElement.style.display = 'none';
+      try { window.top.location = window.self.location; } catch (e) {}
+    }
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
