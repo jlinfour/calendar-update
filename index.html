@@ -18,37 +18,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#0D0D0D">
+  <meta name="theme-color" content="#090e0c">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
   <title>Calendar Update</title>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@600;700&family=Geist:wght@400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    /* Emerald on Obsidian — design tokens (from the emerald-design skill's tokens.css) */
     :root {
-      --bg: #0D0D0D;
-      --surface: #131313;
-      --surface-container-low: #1c1b1b;
-      --surface-container: #201f1f;
-      --surface-container-high: #2a2a2a;
-      --primary: #6ee591;
-      --primary-container: #50c878;
-      --on-surface: #e5e2e1;
-      --on-surface-variant: #bdcabc;
-      --outline: #879487;
-      --outline-variant: #3e4a3f;
+      /* Colour */
+      --bg: #090e0c;
+      --emerald: #10b981;
+      --emerald-400: #34d399;
+      --emerald-300: #6ee7b7;
+      --on-emerald: #022c22;
+      --ink: #e2e8f0;
+      --ink-strong: #ffffff;
+      --ink-soft: #cbd5e1;
+      --card: rgba(12, 20, 17, 0.9);
+      --card-alt: linear-gradient(135deg, #11241f, #0e1d19 50%, #0c1815);
+      --card-item: linear-gradient(90deg, rgba(16, 30, 25, 0.7), rgba(12, 21, 18, 0.4));
+      --surface-solid: #0e1814;
+      --menu-bg: #000; /* dropdown menu only — deliberate exception */
+      --rim: rgba(16, 185, 129, 0.3);
+      --rim-strong: rgba(16, 185, 129, 0.35);
+      --rim-soft: rgba(16, 185, 129, 0.2);
+      --scrim: rgba(4, 10, 8, 0.8);
+      --danger: #ffb4ab;
+
+      /* Typography */
+      --font-sans: "Segoe UI Variable Text", "Segoe UI", Inter, system-ui, sans-serif;
+      --font-mono: Consolas, "Roboto Mono", monospace;
+
+      /* Radii */
+      --radius-card: 16px;
+      --radius-item: 12px;
+      --radius-input: 10px;
+      --radius-icon-btn: 6px;
+      --radius-pill: 999px;
+
+      /* Depth */
+      --blur-card: 16px;
+      --blur-scrim: 8px;
+      --blur-popover: 6px;
+      --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 35px -10px rgba(16, 185, 129, 0.18);
+      --shadow-elevated: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 24px rgba(16, 185, 129, 0.2);
+      --shadow-menu: 0 12px 28px rgba(0, 0, 0, 0.6);
+      --bloom: rgba(16, 185, 129, 0.1);
+
+      /* Motion */
+      --t-hover: 140ms ease;
+      --t-fade: 180ms ease;
+      --t-stage: 220ms ease;
+    }
+
+    ::selection {
+      background: rgba(16, 185, 129, 0.3);
+      color: #a7f3d0;
     }
 
     body {
-      font-family: 'Geist', -apple-system, sans-serif;
-      background: #090909;
-      color: var(--on-surface);
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--ink);
       height: 100dvh;
       overflow: hidden;
       touch-action: pan-y;
+      overscroll-behavior: none;
+      -webkit-tap-highlight-color: transparent;
     }
+
+    button { font-family: inherit; }
 
     #bg-canvas {
       position: fixed;
@@ -72,85 +115,83 @@
       z-index: 1;
     }
 
+    /* ---------- Header ---------- */
     .header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      z-index: 50;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 20px;
-      height: 72px;
-      background: rgba(19, 19, 19, 0.4);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(62, 74, 63, 0.3);
+      padding: calc(10px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) 0 calc(14px + env(safe-area-inset-left));
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
     }
 
-    .header-btn {
+    .header-logo { height: 42px; width: auto; object-fit: contain; }
+
+    .header-spacer { width: 28px; height: 28px; }
+
+    /* Icon button */
+    .icon-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: none;
-      border: none;
-      color: var(--on-surface-variant);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(12, 20, 17, 0.6);
+      border: 1px solid var(--rim);
+      color: var(--emerald-300);
+      opacity: 0.6;
       cursor: pointer;
-      padding: 8px;
-      transition: color 0.2s;
+      transition: opacity var(--t-hover), border-color var(--t-hover), transform var(--t-hover);
     }
 
-    .header-btn:active { color: var(--primary); }
+    .icon-btn .material-symbols-outlined { font-size: 17px; }
 
-    .header h1 {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--on-surface-variant);
+    .icon-btn:hover, .icon-btn:focus-visible, .icon-btn:active {
+      opacity: 1;
+      border-color: rgba(52, 211, 153, 0.7);
+      transform: scale(1.1);
+      outline: none;
     }
 
+    .icon-btn.small { width: 26px; height: 26px; }
+    .icon-btn.small .material-symbols-outlined { font-size: 16px; }
+
+    /* ---------- Progress ---------- */
     #progressBar {
-      position: fixed;
-      top: 72px;
-      left: 0;
-      width: 100%;
       display: flex;
-      gap: 8px;
-      padding: 16px 20px 0;
-      z-index: 40;
+      gap: 6px;
+      padding: 14px calc(14px + env(safe-area-inset-right)) 0 calc(14px + env(safe-area-inset-left));
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
     }
 
     .progress-seg {
       flex: 1;
-      height: 2px;
-      background: rgba(189, 202, 188, 0.2);
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s;
+      height: 3px;
+      border-radius: var(--radius-pill);
+      background: rgba(16, 185, 129, 0.15);
+      transition: background var(--t-fade), box-shadow var(--t-fade);
     }
 
-    .progress-seg.active::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--primary);
-      box-shadow: 0 0 10px var(--primary);
+    .progress-seg.active {
+      background: var(--emerald);
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
     }
 
-
+    /* ---------- Screens ---------- */
     .screens-wrapper {
       flex: 1;
       overflow: hidden;
       position: relative;
-      margin-top: 72px;
     }
 
     .screens {
       display: flex;
       height: 100%;
-      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform var(--t-stage);
     }
 
     .screen {
@@ -158,217 +199,239 @@
       height: 100%;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px 20px;
+      justify-content: flex-start;
+      padding: 20px calc(14px + env(safe-area-inset-right)) 20px calc(14px + env(safe-area-inset-left));
       gap: 24px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(16, 185, 129, 0.25) transparent;
     }
 
-    .screen-label {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 24px;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-      color: var(--on-surface);
+    /* ---------- Panel (label + card) ---------- */
+    .panel {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
     }
 
+    .panel-label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 24px;
+    }
+
+    .panel-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--emerald-400);
+    }
+
+    .meta-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: var(--radius-pill);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: rgba(52, 211, 153, 0.75);
+    }
+
+    /* ---------- Card ---------- */
+    .card {
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+      padding: 20px;
+      background: var(--card);
+      border: 1px solid var(--rim);
+      border-radius: var(--radius-card);
+      backdrop-filter: blur(var(--blur-card));
+      -webkit-backdrop-filter: blur(var(--blur-card));
+      box-shadow: var(--shadow-card);
+    }
+
+    /* Corner bloom — the system's signature */
+    .card::before {
+      content: '';
+      position: absolute;
+      top: -65px;
+      right: -65px;
+      width: 190px;
+      height: 190px;
+      border-radius: 50%;
+      background: var(--bloom);
+      filter: blur(40px);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .helper {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--ink-soft);
+      opacity: 0.8;
+    }
+
+    /* ---------- Form field ---------- */
     .text-input {
       width: 100%;
-      max-width: 340px;
-      height: 56px;
-      padding: 0 24px;
+      height: 50px;
+      padding: 0 16px;
+      font-family: inherit;
       font-size: 16px;
-      font-family: 'Geist', sans-serif;
-      border: 1px solid rgba(62, 74, 63, 0.5);
-      border-radius: 4px;
-      background: rgba(28, 27, 27, 0.4);
-      color: var(--on-surface);
-      text-align: center;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      border: 1px solid rgba(52, 211, 153, 0.18);
+      border-radius: var(--radius-input);
+      background: rgba(6, 14, 10, 0.55);
+      color: var(--ink-strong);
       outline: none;
-      transition: all 0.3s;
+      transition: border-color var(--t-hover), box-shadow var(--t-hover);
     }
 
     .text-input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 8px rgba(110, 229, 145, 0.3);
+      border-color: rgba(52, 211, 153, 0.85);
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);
     }
 
-    .text-input::placeholder { color: rgba(189, 202, 188, 0.4); }
+    .text-input::placeholder { color: var(--ink-soft); opacity: 0.45; font-weight: 400; }
 
-    .category-hint {
-      font-family: 'Geist', sans-serif;
-      font-size: 12px;
-      color: var(--on-surface-variant);
-      opacity: 0.7;
-      margin-top: -6px;
-      margin-bottom: -14px;
+    /* ---------- Category chips ---------- */
+    .chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
-    /* Compact variant for the optional category list — roughly a quarter
-       shorter than the full-size radio group used on the other screens */
-    .radio-group.compact { gap: 6px; }
-    .radio-group.compact .radio-option { padding: 7px 14px; gap: 10px; }
-    .radio-group.compact .radio-dot { width: 16px; height: 16px; }
-    .radio-group.compact .radio-option.selected .radio-dot::after {
-      top: 2px; left: 2px; width: 8px; height: 8px;
+    .chip {
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid rgba(52, 211, 153, 0.25);
+      border-radius: var(--radius-pill);
+      background: transparent;
+      color: var(--ink-soft);
+      cursor: pointer;
+      transition: background var(--t-hover), border-color var(--t-hover), color var(--t-hover);
     }
-    .radio-group.compact .radio-label { font-size: 14px; }
 
-    /* Radio buttons */
-    .radio-group {
+    .chip:hover { border-color: rgba(52, 211, 153, 0.5); color: var(--emerald-300); }
+
+    .chip.selected {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(52, 211, 153, 0.7);
+      color: var(--emerald-300);
+      font-weight: 600;
+    }
+
+    /* ---------- Option list (list items used as choices) ---------- */
+    .option-list {
       display: flex;
       flex-direction: column;
       gap: 12px;
-      width: 100%;
-      max-width: 340px;
     }
 
-    .radio-option {
+    .option {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px;
+      border: 1px solid var(--rim-soft);
+      border-radius: var(--radius-item);
+      background: var(--card-item);
+      cursor: pointer;
+      transition: border-color var(--t-hover), background var(--t-hover);
+    }
+
+    .option:hover { border-color: rgba(52, 211, 153, 0.45); }
+
+    .option.selected {
+      border-color: rgba(52, 211, 153, 0.7);
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.14), rgba(16, 185, 129, 0.04));
+    }
+
+    .option-badge, .item-badge {
+      flex-shrink: 0;
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 16px 20px;
-      border: 1px solid rgba(62, 74, 63, 0.5);
-      border-radius: 4px;
-      background: rgba(28, 27, 27, 0.4);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .radio-option:active,
-    .radio-option.selected {
-      border-color: var(--primary);
-      box-shadow: 0 0 8px rgba(110, 229, 145, 0.3);
-    }
-
-    .radio-dot {
+      justify-content: center;
       width: 20px;
       height: 20px;
+      margin-top: 1px;
       border-radius: 50%;
-      border: 2px solid rgba(135, 148, 135, 0.5);
-      position: relative;
-      transition: all 0.2s;
-      flex-shrink: 0;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--emerald-300);
+      font-size: 11px;
+      font-weight: 700;
     }
 
-    .radio-option.selected .radio-dot {
-      border-color: var(--primary);
+    .option-badge .material-symbols-outlined {
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity var(--t-hover);
     }
 
-    .radio-option.selected .radio-dot::after {
-      content: '';
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--primary);
-      box-shadow: 0 0 8px rgba(110, 229, 145, 0.4);
+    .option.selected .option-badge,
+    .item-badge { background: rgba(16, 185, 129, 0.15); }
+
+    .option.selected .option-badge .material-symbols-outlined { opacity: 1; }
+
+    .option-title, .item-title {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--ink-strong);
     }
 
-    .radio-label {
-      font-family: 'Geist', sans-serif;
-      font-size: 16px;
-      color: var(--on-surface);
-    }
-
-    .radio-option.selected .radio-label {
-      color: var(--primary);
-    }
-
-    /* Canvas */
-    .canvas-container {
-      width: 100%;
-      max-width: 340px;
-      aspect-ratio: 4/3;
-      border: 1px solid rgba(62, 74, 63, 0.5);
-      border-radius: 4px;
-      background: rgba(28, 27, 27, 0.4);
-      backdrop-filter: blur(10px);
-      position: relative;
-      touch-action: none;
-      transition: all 0.3s;
-    }
-
-    .canvas-container.drawing {
-      border-color: var(--primary);
-      box-shadow: 0 0 8px rgba(110, 229, 145, 0.3);
-    }
-
-    .canvas-container canvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-      border-radius: 3px;
-    }
-
-    .canvas-placeholder {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: rgba(189, 202, 188, 0.35);
-      font-family: 'Geist', sans-serif;
-      font-size: 15px;
-      text-align: center;
-      line-height: 1.6;
-      pointer-events: none;
-      transition: opacity 0.2s;
-    }
-
-    .canvas-container.has-content .canvas-placeholder { opacity: 0; }
-
-    .recognised-value {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 18px;
-      font-weight: 500;
-      min-height: 24px;
-      color: var(--primary);
-      text-shadow: 0 0 12px rgba(110, 229, 145, 0.4);
-    }
-
-    .recognised-value.loading {
-      color: var(--on-surface-variant);
-      font-weight: 400;
+    .option-body, .item-body {
+      margin-top: 2px;
       font-size: 13px;
-      text-shadow: none;
+      line-height: 1.5;
+      color: var(--ink-soft);
     }
 
+    /* ---------- Write / Type toggle ---------- */
     .input-mode-toggle {
       display: flex;
-      gap: 4px;
-      padding: 3px;
-      background: rgba(51, 51, 51, 0.3);
-      border: 1px solid rgba(62, 74, 63, 0.3);
-      border-radius: 4px;
+      gap: 2px;
+      padding: 2px;
+      background: rgba(12, 20, 17, 0.6);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: var(--radius-pill);
     }
 
     .toggle-btn {
-      padding: 6px 16px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.1em;
+      padding: 5px 14px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       border: none;
-      border-radius: 2px;
+      border-radius: var(--radius-pill);
       background: transparent;
-      color: var(--on-surface-variant);
+      color: var(--ink-soft);
+      opacity: 0.7;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: background var(--t-hover), color var(--t-hover), opacity var(--t-hover);
     }
 
     .toggle-btn.active {
-      background: rgba(110, 229, 145, 0.15);
-      color: var(--primary);
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--emerald-300);
+      opacity: 1;
     }
 
     .handwrite-mode, .type-mode {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 12px;
+      gap: 14px;
       width: 100%;
     }
 
@@ -377,327 +440,370 @@
     .handwrite-mode.active { display: flex; }
     .handwrite-mode:not(.active) { display: none; }
 
-    .canvas-actions {
+    /* ---------- Handwriting canvas ---------- */
+    .canvas-container {
+      width: 100%;
+      aspect-ratio: 4/3;
+      border: 1px solid rgba(52, 211, 153, 0.18);
+      border-radius: var(--radius-item);
+      background: rgba(6, 14, 10, 0.55);
+      position: relative;
+      touch-action: none;
+      transition: border-color var(--t-hover), box-shadow var(--t-hover);
+    }
+
+    .canvas-container.drawing {
+      border-color: rgba(52, 211, 153, 0.85);
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.35);
+    }
+
+    .canvas-container canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 11px;
+    }
+
+    .canvas-placeholder {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--ink-soft);
+      opacity: 0.45;
+      font-size: 14px;
+      text-align: center;
+      line-height: 1.6;
+      pointer-events: none;
+      transition: opacity var(--t-fade);
+    }
+
+    .canvas-container.has-content .canvas-placeholder { opacity: 0; }
+
+    .result-row {
       display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
       gap: 12px;
     }
 
-    .btn-small {
-      padding: 8px 20px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      border: 1px solid rgba(135, 148, 135, 0.3);
-      border-radius: 2px;
-      background: rgba(51, 51, 51, 0.3);
-      color: var(--on-surface-variant);
+    .recognised-value {
+      flex: 1;
+      min-width: 0;
+      min-height: 24px;
+      font-size: 17px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--emerald-300);
+    }
+
+    .recognised-value.loading {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--ink-soft);
+    }
+
+    .canvas-actions {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    /* ---------- Buttons ---------- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid rgba(52, 211, 153, 0.25);
+      border-radius: var(--radius-pill);
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--emerald-400);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: background var(--t-hover), border-color var(--t-hover), color var(--t-hover), box-shadow var(--t-hover);
     }
 
-    .btn-small:active {
-      background: rgba(110, 229, 145, 0.1);
-      border-color: var(--primary);
-      color: var(--primary);
+    .btn:hover, .btn:focus-visible {
+      border-color: rgba(52, 211, 153, 0.6);
+      color: var(--emerald-300);
+      outline: none;
     }
 
+    .btn:active { background: rgba(16, 185, 129, 0.2); }
+
+    .btn.primary {
+      background: var(--emerald);
+      border-color: var(--emerald);
+      color: var(--on-emerald);
+    }
+
+    .btn.primary:hover, .btn.primary:focus-visible { background: var(--emerald-400); border-color: var(--emerald-400); color: var(--on-emerald); }
+
+    .btn.block { width: 100%; }
+
+    .btn .material-symbols-outlined { font-size: 18px; }
+
+    /* ---------- Bottom nav ---------- */
     .nav {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 20px 28px;
+      gap: 8px;
+      padding: 12px calc(14px + env(safe-area-inset-right)) calc(22px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
       position: relative;
       z-index: 10;
+      flex-shrink: 0;
     }
 
-    .nav-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 24px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      border: 1px solid var(--primary);
-      border-radius: 2px;
-      background: var(--surface);
-      color: var(--primary);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .nav-btn:active {
-      background: rgba(110, 229, 145, 0.1);
-      box-shadow: 0 0 15px rgba(110, 229, 145, 0.4);
-    }
-
+    .nav-btn { padding: 12px 20px; font-size: 14px; }
     .nav-btn.hidden { visibility: hidden; }
+    .nav-btn.submit { box-shadow: 0 0 24px rgba(16, 185, 129, 0.35); }
 
-    .nav-btn.submit {
-      background: var(--primary);
-      color: #003919;
-      border-color: var(--primary);
-      box-shadow: 0 0 15px rgba(110, 229, 145, 0.4);
-    }
-
-    .nav-btn.submit:active { background: var(--primary-container); }
-    .nav-btn .arrow { font-size: 16px; }
-
+    /* ---------- Settings modal ---------- */
     .settings-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(8px);
+      background: var(--scrim);
+      backdrop-filter: blur(var(--blur-scrim));
+      -webkit-backdrop-filter: blur(var(--blur-scrim));
       z-index: 100;
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
+      padding: calc(14px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity var(--t-fade), visibility var(--t-fade);
     }
 
-    .settings-overlay.open { display: flex; }
+    .settings-overlay.open { opacity: 1; visibility: visible; }
 
     .settings-panel {
-      background: rgba(51, 51, 51, 0.4);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(135, 148, 135, 0.2);
-      border-radius: 8px;
-      padding: 28px 24px;
-      width: 90%;
-      max-width: 380px;
-      max-height: 80dvh;
+      position: relative;
+      width: min(100%, 440px);
+      max-height: 100%;
       overflow-y: auto;
+      padding: 22px 20px 20px;
+      background: var(--surface-solid);
+      border: 1px solid rgba(52, 211, 153, 0.45);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-elevated);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(16, 185, 129, 0.25) transparent;
     }
 
     .settings-panel h2 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 20px;
+      font-size: 17px;
       font-weight: 600;
+      color: var(--emerald-300);
       margin-bottom: 20px;
-      color: var(--on-surface);
     }
 
-    .settings-panel label {
+    .modal-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+    }
+
+    .settings-panel .btn-google { margin-bottom: 24px; }
+
+    .settings-panel .btn-google.connected {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(52, 211, 153, 0.7);
+      color: var(--emerald-300);
+    }
+
+    .field { margin-bottom: 16px; }
+
+    .field-label {
       display: block;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
       margin-bottom: 6px;
-      color: var(--on-surface-variant);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--emerald-400);
     }
 
-    .settings-panel input, .settings-panel select {
-      width: 100%;
-      padding: 12px 14px;
-      font-size: 14px;
-      font-family: 'Geist', sans-serif;
-      border: 1px solid rgba(62, 74, 63, 0.5);
-      border-radius: 4px;
-      margin-bottom: 16px;
-      background: rgba(28, 27, 27, 0.6);
-      color: var(--on-surface);
-      outline: none;
-      transition: all 0.3s;
-    }
-
-    .settings-panel input:focus, .settings-panel select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 8px rgba(110, 229, 145, 0.3);
-    }
-
-    .settings-panel select option { background: #1c1b1b; }
+    .settings-panel .text-input { height: 46px; }
 
     .settings-panel .btn-row {
       display: flex;
-      gap: 10px;
-      margin-top: 8px;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 24px;
     }
 
-    .settings-panel .btn-row button {
-      flex: 1;
-      padding: 12px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      border-radius: 2px;
+    /* ---------- Dropdown / select menu ---------- */
+    .select-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-align: left;
       cursor: pointer;
-      transition: all 0.2s;
     }
 
-    .settings-panel .btn-save {
-      background: var(--primary);
-      color: #003919;
-      border: 1px solid var(--primary);
+    .select-trigger .material-symbols-outlined { font-size: 20px; color: var(--emerald-300); }
+
+    .select-menu {
+      position: fixed;
+      z-index: 150;
+      display: none;
+      width: 224px;
+      max-height: calc(100dvh - 16px);
+      overflow-y: auto;
+      background: var(--menu-bg);
+      border: 2px solid var(--emerald);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-menu);
     }
 
-    .settings-panel .btn-cancel {
-      background: transparent;
-      color: var(--on-surface-variant);
-      border: 1px solid rgba(135, 148, 135, 0.3);
-    }
+    .select-menu.open { display: block; }
 
-    .settings-panel .btn-google {
+    .select-row {
+      display: flex;
+      align-items: center;
       width: 100%;
-      padding: 12px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      border: 1px solid var(--primary);
-      border-radius: 2px;
+      padding: 10px 16px;
+      border: none;
       background: transparent;
-      color: var(--primary);
+      color: #d4d4d4;
+      text-align: left;
       cursor: pointer;
-      margin-bottom: 20px;
-      transition: all 0.2s;
+      transition: background var(--t-hover);
     }
 
-    .settings-panel .btn-google:active {
-      background: rgba(110, 229, 145, 0.1);
-      box-shadow: 0 0 15px rgba(110, 229, 145, 0.4);
+    .select-row + .select-row { border-top: 1px solid rgba(6, 78, 59, 0.3); }
+
+    .select-row:hover { background: rgba(2, 44, 34, 0.3); }
+
+    .select-key {
+      flex-shrink: 0;
+      width: 42px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
     }
 
-    .settings-panel .btn-google.connected {
-      background: rgba(110, 229, 145, 0.1);
-      box-shadow: 0 0 10px rgba(110, 229, 145, 0.2);
-    }
+    .select-label { flex: 1; font-size: 13px; font-weight: 400; }
 
+    .select-check { font-size: 13px; font-weight: 700; color: var(--emerald); }
+
+    .select-row.selected { background: rgba(2, 44, 34, 0.5); }
+    .select-row.selected .select-key { color: var(--emerald); }
+    .select-row.selected .select-label { color: #d1fae5; font-weight: 600; }
+
+    /* ---------- Toast ---------- */
     .toast {
       position: fixed;
-      bottom: 80px;
+      bottom: calc(92px + env(safe-area-inset-bottom));
       left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: rgba(51, 51, 51, 0.8);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(110, 229, 145, 0.3);
-      border-radius: 4px;
-      color: var(--primary);
-      padding: 12px 24px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
+      transform: translate(-50%, 8px);
+      width: max-content;
+      max-width: calc(100vw - 28px);
+      padding: 10px 18px;
+      background: var(--surface-solid);
+      border: 1px solid rgba(52, 211, 153, 0.45);
+      border-radius: 14px;
+      box-shadow: var(--shadow-elevated);
+      color: var(--ink);
+      font-size: 13px;
       font-weight: 500;
-      letter-spacing: 0.05em;
+      text-align: center;
       opacity: 0;
-      transition: all 0.3s;
+      pointer-events: none;
+      transition: opacity var(--t-fade), transform var(--t-fade);
       z-index: 200;
-      white-space: nowrap;
-      box-shadow: 0 0 12px rgba(110, 229, 145, 0.2);
     }
 
     .toast.show {
       opacity: 1;
-      transform: translateX(-50%) translateY(0);
+      transform: translate(-50%, 0);
     }
 
-    .screen[data-screen="confirm"] {
-      justify-content: flex-start;
-      padding-top: 24px;
-      overflow-y: auto;
-    }
-
-    /* Title screen carries the extra category list — let it scroll if the
-       on-screen keyboard squeezes the viewport */
-    .screen[data-screen="title"] { overflow-y: auto; }
-
-    .confirm-summary {
-      width: 100%;
-      max-width: 340px;
-      border: 1px solid rgba(62, 74, 63, 0.5);
-      border-radius: 4px;
-      background: rgba(28, 27, 27, 0.4);
-      overflow: hidden;
-    }
+    /* ---------- Review screen ---------- */
+    .card.flush { padding: 4px 20px; }
 
     .confirm-row {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      padding: 12px 16px;
-      border-bottom: 1px solid rgba(62, 74, 63, 0.25);
       gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--rim-soft);
     }
 
     .confirm-row:last-child { border-bottom: none; }
 
     .confirm-row-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--on-surface-variant);
       flex-shrink: 0;
+      font-size: 13px;
+      color: var(--ink-soft);
     }
 
     .confirm-row-value {
-      font-family: 'Geist', sans-serif;
-      font-size: 15px;
-      color: var(--primary);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink-strong);
       text-align: right;
       word-break: break-word;
-    }
-
-    .conflict-section {
-      width: 100%;
-      max-width: 340px;
-      border: 1px solid rgba(62, 74, 63, 0.5);
-      border-radius: 4px;
-      background: rgba(28, 27, 27, 0.4);
-      padding: 12px 16px;
     }
 
     .conflict-header {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--on-surface-variant);
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--ink-soft);
     }
 
-    .conflict-header .material-symbols-outlined { font-size: 16px; }
+    .conflict-header .material-symbols-outlined { font-size: 18px; color: var(--emerald-300); }
 
-    .conflict-header.has-conflicts { color: #f0a050; }
+    .conflict-header.has-conflicts,
+    .conflict-header.has-conflicts .material-symbols-outlined { color: var(--danger); }
 
-    .conflict-item {
-      padding: 8px 0;
-      border-top: 1px solid rgba(62, 74, 63, 0.25);
-      margin-top: 8px;
+    .conflict-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 14px;
     }
 
-    .conflict-item-title {
-      font-family: 'Geist', sans-serif;
-      font-size: 13px;
-      color: var(--on-surface);
+    .conflict-list:empty { display: none; }
+
+    .list-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px;
+      border: 1px solid var(--rim-soft);
+      border-radius: var(--radius-item);
+      background: var(--card-item);
     }
 
-    .conflict-item-time {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
-      color: var(--on-surface-variant);
-      margin-top: 3px;
+    .list-item-body { min-width: 0; }
+
+    /* ---------- Desktop: 560px column, anchored right ---------- */
+    @media (min-width: 900px) {
+      .app {
+        width: 560px;
+        margin: 0 28px 0 auto;
+        padding-bottom: 4px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="app">
     <header class="header">
-      <button class="header-btn" style="visibility:hidden">
-        <span class="material-symbols-outlined">close</span>
-      </button>
-      <img src="logo.png" alt="Calendar Update" style="height:42px;width:auto;object-fit:contain;">
-      <button class="header-btn" onclick="toggleSettings()">
+      <span class="header-spacer"></span>
+      <img class="header-logo" src="logo.png" alt="Calendar Update">
+      <button class="icon-btn" onclick="toggleSettings()" aria-label="Settings">
         <span class="material-symbols-outlined">settings</span>
       </button>
     </header>
@@ -711,171 +817,232 @@
 
         <!-- 0: Title -->
         <div class="screen" data-screen="title">
-          <div class="screen-label">Title</div>
-          <input class="text-input" id="titleInput" type="text" placeholder="Type title here" autocomplete="off">
-          <div class="category-hint">Category (optional — tap again to clear)</div>
-          <div class="radio-group compact" id="titleCategoryGroup">
-            <div class="radio-option" data-category="Appointment" onclick="selectTitleCategory('Appointment')">
-              <div class="radio-dot"></div>
-              <div class="radio-label">Appointment</div>
+          <div class="panel">
+            <div class="panel-label-row"><div class="panel-label">Title</div></div>
+            <div class="card">
+              <input class="text-input" id="titleInput" type="text" placeholder="Type title here" autocomplete="off">
             </div>
-            <div class="radio-option" data-category="Deadline" onclick="selectTitleCategory('Deadline')">
-              <div class="radio-dot"></div>
-              <div class="radio-label">Deadline</div>
+          </div>
+          <div class="panel">
+            <div class="panel-label-row">
+              <div class="panel-label">Category</div>
+              <span class="meta-chip">Optional</span>
             </div>
-            <div class="radio-option" data-category="Meeting" onclick="selectTitleCategory('Meeting')">
-              <div class="radio-dot"></div>
-              <div class="radio-label">Meeting</div>
-            </div>
-            <div class="radio-option" data-category="Reminder" onclick="selectTitleCategory('Reminder')">
-              <div class="radio-dot"></div>
-              <div class="radio-label">Reminder</div>
-            </div>
-            <div class="radio-option" data-category="Tentative" onclick="selectTitleCategory('Tentative')">
-              <div class="radio-dot"></div>
-              <div class="radio-label">Tentative</div>
+            <div class="card">
+              <div class="chip-group" id="titleCategoryGroup">
+                <button class="chip" data-category="Appointment" onclick="selectTitleCategory('Appointment')">Appointment</button>
+                <button class="chip" data-category="Deadline" onclick="selectTitleCategory('Deadline')">Deadline</button>
+                <button class="chip" data-category="Meeting" onclick="selectTitleCategory('Meeting')">Meeting</button>
+                <button class="chip" data-category="Reminder" onclick="selectTitleCategory('Reminder')">Reminder</button>
+                <button class="chip" data-category="Tentative" onclick="selectTitleCategory('Tentative')">Tentative</button>
+              </div>
+              <div class="helper">Tap a selected category again to clear it.</div>
             </div>
           </div>
         </div>
 
         <!-- 1: Event Type -->
         <div class="screen" data-screen="eventType">
-          <div class="screen-label">Event Type</div>
-          <div class="radio-group">
-            <div class="radio-option selected" onclick="selectEventType('single')">
-              <div class="radio-dot"></div>
-              <div class="radio-label">Single-day event</div>
-            </div>
-            <div class="radio-option" onclick="selectEventType('multi')">
-              <div class="radio-dot"></div>
-              <div class="radio-label">Multi-day event</div>
+          <div class="panel">
+            <div class="panel-label-row"><div class="panel-label">Event Type</div></div>
+            <div class="card">
+              <div class="option-list">
+                <div class="option selected" onclick="selectEventType('single')">
+                  <span class="option-badge"><span class="material-symbols-outlined">check</span></span>
+                  <div>
+                    <div class="option-title">Single-day event</div>
+                    <div class="option-body">Starts and ends on the same date</div>
+                  </div>
+                </div>
+                <div class="option" onclick="selectEventType('multi')">
+                  <span class="option-badge"><span class="material-symbols-outlined">check</span></span>
+                  <div>
+                    <div class="option-title">Multi-day event</div>
+                    <div class="option-body">Spans two or more dates</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- 2: Full Day? -->
         <div class="screen" data-screen="fullDay">
-          <div class="screen-label">Full Day?</div>
-          <div class="radio-group">
-            <div class="radio-option selected" id="fullDayYes" onclick="selectFullDay(true)">
-              <div class="radio-dot"></div>
-              <div class="radio-label">Yes — All day</div>
-            </div>
-            <div class="radio-option" id="fullDayNo" onclick="selectFullDay(false)">
-              <div class="radio-dot"></div>
-              <div class="radio-label">No — Specific times</div>
+          <div class="panel">
+            <div class="panel-label-row"><div class="panel-label">Full Day?</div></div>
+            <div class="card">
+              <div class="option-list">
+                <div class="option selected" id="fullDayYes" onclick="selectFullDay(true)">
+                  <span class="option-badge"><span class="material-symbols-outlined">check</span></span>
+                  <div>
+                    <div class="option-title">Yes — All day</div>
+                    <div class="option-body">No start or end time</div>
+                  </div>
+                </div>
+                <div class="option" id="fullDayNo" onclick="selectFullDay(false)">
+                  <span class="option-badge"><span class="material-symbols-outlined">check</span></span>
+                  <div>
+                    <div class="option-title">No — Specific times</div>
+                    <div class="option-body">Set a start and end time</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- 3: Date (Start) -->
         <div class="screen" data-screen="dateStart">
-          <div class="screen-label" id="dateStartLabel">Date (Start)</div>
-          <div class="input-mode-toggle">
-            <button class="toggle-btn active" onclick="setInputMode('dateStart','handwrite')">Write</button>
-            <button class="toggle-btn" onclick="setInputMode('dateStart','type')">Type</button>
-          </div>
-          <div class="handwrite-mode active" id="dateStartHandwrite">
-            <div class="canvas-container" id="dateStartCanvasContainer">
-              <canvas id="dateStartCanvas"></canvas>
-              <div class="canvas-placeholder">Write date here<br>(dd/mm/yy)</div>
+          <div class="panel">
+            <div class="panel-label-row">
+              <div class="panel-label" id="dateStartLabel">Date (Start)</div>
+              <div class="input-mode-toggle">
+                <button class="toggle-btn active" onclick="setInputMode('dateStart','handwrite')">Write</button>
+                <button class="toggle-btn" onclick="setInputMode('dateStart','type')">Type</button>
+              </div>
             </div>
-            <div class="recognised-value" id="dateStartValue"></div>
-            <div class="canvas-actions">
-              <button class="btn-small" onclick="clearCanvas('dateStart')">Clear</button>
-              <button class="btn-small" onclick="recognise('dateStart')">Recognise</button>
+            <div class="card">
+              <div class="handwrite-mode active" id="dateStartHandwrite">
+                <div class="canvas-container" id="dateStartCanvasContainer">
+                  <canvas id="dateStartCanvas"></canvas>
+                  <div class="canvas-placeholder">Write date here<br>(dd/mm/yy)</div>
+                </div>
+                <div class="result-row">
+                  <div class="recognised-value" id="dateStartValue"></div>
+                  <div class="canvas-actions">
+                    <button class="btn" onclick="clearCanvas('dateStart')">Clear</button>
+                    <button class="btn" onclick="recognise('dateStart')">Recognise</button>
+                  </div>
+                </div>
+              </div>
+              <div class="type-mode" id="dateStartType">
+                <input class="text-input" id="dateStartTypedInput" type="text" placeholder="dd/mm/yy" autocomplete="off">
+              </div>
             </div>
-          </div>
-          <div class="type-mode" id="dateStartType">
-            <input class="text-input" id="dateStartTypedInput" type="text" placeholder="dd/mm/yy" autocomplete="off">
           </div>
         </div>
 
         <!-- 3: Date (End) — only for multi-day -->
         <div class="screen" data-screen="dateEnd">
-          <div class="screen-label">Date (End)</div>
-          <div class="input-mode-toggle">
-            <button class="toggle-btn active" onclick="setInputMode('dateEnd','handwrite')">Write</button>
-            <button class="toggle-btn" onclick="setInputMode('dateEnd','type')">Type</button>
-          </div>
-          <div class="handwrite-mode active" id="dateEndHandwrite">
-            <div class="canvas-container" id="dateEndCanvasContainer">
-              <canvas id="dateEndCanvas"></canvas>
-              <div class="canvas-placeholder">Write end date here<br>(dd/mm/yy)</div>
+          <div class="panel">
+            <div class="panel-label-row">
+              <div class="panel-label">Date (End)</div>
+              <div class="input-mode-toggle">
+                <button class="toggle-btn active" onclick="setInputMode('dateEnd','handwrite')">Write</button>
+                <button class="toggle-btn" onclick="setInputMode('dateEnd','type')">Type</button>
+              </div>
             </div>
-            <div class="recognised-value" id="dateEndValue"></div>
-            <div class="canvas-actions">
-              <button class="btn-small" onclick="clearCanvas('dateEnd')">Clear</button>
-              <button class="btn-small" onclick="recognise('dateEnd')">Recognise</button>
+            <div class="card">
+              <div class="handwrite-mode active" id="dateEndHandwrite">
+                <div class="canvas-container" id="dateEndCanvasContainer">
+                  <canvas id="dateEndCanvas"></canvas>
+                  <div class="canvas-placeholder">Write end date here<br>(dd/mm/yy)</div>
+                </div>
+                <div class="result-row">
+                  <div class="recognised-value" id="dateEndValue"></div>
+                  <div class="canvas-actions">
+                    <button class="btn" onclick="clearCanvas('dateEnd')">Clear</button>
+                    <button class="btn" onclick="recognise('dateEnd')">Recognise</button>
+                  </div>
+                </div>
+              </div>
+              <div class="type-mode" id="dateEndType">
+                <input class="text-input" id="dateEndTypedInput" type="text" placeholder="dd/mm/yy" autocomplete="off">
+              </div>
             </div>
-          </div>
-          <div class="type-mode" id="dateEndType">
-            <input class="text-input" id="dateEndTypedInput" type="text" placeholder="dd/mm/yy" autocomplete="off">
           </div>
         </div>
 
         <!-- 4: Time (Start) -->
         <div class="screen" data-screen="timeStart">
-          <div class="screen-label">Time (Start)</div>
-          <div class="input-mode-toggle">
-            <button class="toggle-btn active" onclick="setInputMode('timeStart','handwrite')">Write</button>
-            <button class="toggle-btn" onclick="setInputMode('timeStart','type')">Type</button>
-          </div>
-          <div class="handwrite-mode active" id="timeStartHandwrite">
-            <div class="canvas-container" id="timeStartCanvasContainer">
-              <canvas id="timeStartCanvas"></canvas>
-              <div class="canvas-placeholder">Write start time here<br>(hh:mm am/pm)</div>
+          <div class="panel">
+            <div class="panel-label-row">
+              <div class="panel-label">Time (Start)</div>
+              <div class="input-mode-toggle">
+                <button class="toggle-btn active" onclick="setInputMode('timeStart','handwrite')">Write</button>
+                <button class="toggle-btn" onclick="setInputMode('timeStart','type')">Type</button>
+              </div>
             </div>
-            <div class="recognised-value" id="timeStartValue"></div>
-            <div class="canvas-actions">
-              <button class="btn-small" onclick="clearCanvas('timeStart')">Clear</button>
-              <button class="btn-small" onclick="recognise('timeStart')">Recognise</button>
+            <div class="card">
+              <div class="handwrite-mode active" id="timeStartHandwrite">
+                <div class="canvas-container" id="timeStartCanvasContainer">
+                  <canvas id="timeStartCanvas"></canvas>
+                  <div class="canvas-placeholder">Write start time here<br>(hh:mm am/pm)</div>
+                </div>
+                <div class="result-row">
+                  <div class="recognised-value" id="timeStartValue"></div>
+                  <div class="canvas-actions">
+                    <button class="btn" onclick="clearCanvas('timeStart')">Clear</button>
+                    <button class="btn" onclick="recognise('timeStart')">Recognise</button>
+                  </div>
+                </div>
+              </div>
+              <div class="type-mode" id="timeStartType">
+                <input class="text-input" id="timeStartTypedInput" type="text" placeholder="hh:mm am/pm" autocomplete="off">
+              </div>
             </div>
-          </div>
-          <div class="type-mode" id="timeStartType">
-            <input class="text-input" id="timeStartTypedInput" type="text" placeholder="hh:mm am/pm" autocomplete="off">
           </div>
         </div>
 
         <!-- 5: Time (End) -->
         <div class="screen" data-screen="timeEnd">
-          <div class="screen-label">Time (End)</div>
-          <div class="input-mode-toggle">
-            <button class="toggle-btn active" onclick="setInputMode('timeEnd','handwrite')">Write</button>
-            <button class="toggle-btn" onclick="setInputMode('timeEnd','type')">Type</button>
-          </div>
-          <div class="handwrite-mode active" id="timeEndHandwrite">
-            <div class="canvas-container" id="timeEndCanvasContainer">
-              <canvas id="timeEndCanvas"></canvas>
-              <div class="canvas-placeholder">Write end time here<br>(hh:mm am/pm)</div>
+          <div class="panel">
+            <div class="panel-label-row">
+              <div class="panel-label">Time (End)</div>
+              <div class="input-mode-toggle">
+                <button class="toggle-btn active" onclick="setInputMode('timeEnd','handwrite')">Write</button>
+                <button class="toggle-btn" onclick="setInputMode('timeEnd','type')">Type</button>
+              </div>
             </div>
-            <div class="recognised-value" id="timeEndValue"></div>
-            <div class="canvas-actions">
-              <button class="btn-small" onclick="clearCanvas('timeEnd')">Clear</button>
-              <button class="btn-small" onclick="recognise('timeEnd')">Recognise</button>
+            <div class="card">
+              <div class="handwrite-mode active" id="timeEndHandwrite">
+                <div class="canvas-container" id="timeEndCanvasContainer">
+                  <canvas id="timeEndCanvas"></canvas>
+                  <div class="canvas-placeholder">Write end time here<br>(hh:mm am/pm)</div>
+                </div>
+                <div class="result-row">
+                  <div class="recognised-value" id="timeEndValue"></div>
+                  <div class="canvas-actions">
+                    <button class="btn" onclick="clearCanvas('timeEnd')">Clear</button>
+                    <button class="btn" onclick="recognise('timeEnd')">Recognise</button>
+                  </div>
+                </div>
+              </div>
+              <div class="type-mode" id="timeEndType">
+                <input class="text-input" id="timeEndTypedInput" type="text" placeholder="hh:mm am/pm" autocomplete="off">
+              </div>
             </div>
-          </div>
-          <div class="type-mode" id="timeEndType">
-            <input class="text-input" id="timeEndTypedInput" type="text" placeholder="hh:mm am/pm" autocomplete="off">
           </div>
         </div>
 
         <!-- 6: Venue -->
         <div class="screen" data-screen="venue">
-          <div class="screen-label">Venue</div>
-          <input class="text-input" id="venueInput" type="text" placeholder="Type venue here (optional)" autocomplete="off">
+          <div class="panel">
+            <div class="panel-label-row">
+              <div class="panel-label">Venue</div>
+              <span class="meta-chip">Optional</span>
+            </div>
+            <div class="card">
+              <input class="text-input" id="venueInput" type="text" placeholder="Type venue here" autocomplete="off">
+            </div>
+          </div>
         </div>
 
         <!-- 7: Confirm -->
         <div class="screen" data-screen="confirm">
-          <div class="screen-label">Review</div>
-          <div class="confirm-summary" id="confirmSummary"></div>
-          <div class="conflict-section">
-            <div class="conflict-header" id="conflictHeader">
-              <span class="material-symbols-outlined" id="conflictIcon">schedule</span>
-              <span id="conflictTitle">Checking calendar...</span>
+          <div class="panel">
+            <div class="panel-label-row"><div class="panel-label">Review</div></div>
+            <div class="card flush" id="confirmSummary"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-label-row"><div class="panel-label">Calendar</div></div>
+            <div class="card">
+              <div class="conflict-header" id="conflictHeader">
+                <span class="material-symbols-outlined" id="conflictIcon">schedule</span>
+                <span id="conflictTitle">Checking calendar...</span>
+              </div>
+              <div class="conflict-list" id="conflictList"></div>
             </div>
-            <div id="conflictList"></div>
           </div>
         </div>
 
@@ -883,11 +1050,11 @@
     </div>
 
     <div class="nav">
-      <button class="nav-btn hidden" id="prevBtn" onclick="navigate(-1)">
+      <button class="btn nav-btn hidden" id="prevBtn" onclick="navigate(-1)">
         <span class="material-symbols-outlined arrow">chevron_left</span>
         <span id="prevLabel">Back</span>
       </button>
-      <button class="nav-btn" id="nextBtn" onclick="navigate(1)">
+      <button class="btn primary nav-btn" id="nextBtn" onclick="navigate(1)">
         <span id="nextLabel">Type</span>
         <span class="material-symbols-outlined arrow" id="nextIcon">chevron_right</span>
       </button>
@@ -898,27 +1065,38 @@
   <div class="settings-overlay" id="settingsOverlay">
     <div class="settings-panel">
       <h2>Settings</h2>
-      <button class="btn-google" id="googleAuthBtn" onclick="handleGoogleAuth()">Connect Google Calendar</button>
-      <label>OpenRouter API Key</label>
-      <input type="password" id="openrouterKey" placeholder="sk-or-...">
-      <label>Vision Model</label>
-      <select id="visionModel">
-        <option value="anthropic/claude-sonnet-4">Claude Sonnet 4</option>
-        <option value="anthropic/claude-haiku-4">Claude Haiku 4</option>
-        <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
-        <option value="openai/gpt-4o">GPT-4o</option>
-        <option value="google/gemini-flash-1.5">Gemini Flash</option>
-      </select>
-      <label>Google Client ID</label>
-      <input type="text" id="googleClientId" placeholder="xxxxx.apps.googleusercontent.com">
+      <button class="icon-btn small modal-close" onclick="toggleSettings()" aria-label="Close settings">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+      <button class="btn block btn-google" id="googleAuthBtn" onclick="handleGoogleAuth()">Connect Google Calendar</button>
+      <div class="field">
+        <label class="field-label" for="openrouterKey">OpenRouter API Key</label>
+        <input class="text-input" type="password" id="openrouterKey" placeholder="sk-or-...">
+        <div class="helper">Used for handwriting recognition. Stored on this device only.</div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="visionModelBtn">Vision Model</label>
+        <button type="button" class="text-input select-trigger" id="visionModelBtn" onclick="toggleModelMenu()" aria-haspopup="listbox">
+          <span id="visionModelLabel">Claude Sonnet 4</span>
+          <span class="material-symbols-outlined">expand_more</span>
+        </button>
+        <input type="hidden" id="visionModel" value="anthropic/claude-sonnet-4">
+      </div>
+      <div class="field">
+        <label class="field-label" for="googleClientId">Google Client ID</label>
+        <input class="text-input" type="text" id="googleClientId" placeholder="xxxxx.apps.googleusercontent.com">
+      </div>
       <div class="btn-row">
-        <button class="btn-cancel" onclick="toggleSettings()">Cancel</button>
-        <button class="btn-save" onclick="saveSettings()">Save</button>
+        <button class="btn" onclick="toggleSettings()">Cancel</button>
+        <button class="btn primary" onclick="saveSettings()">Save</button>
       </div>
     </div>
   </div>
 
+  <div class="select-menu" id="visionModelMenu" role="listbox"></div>
+
   <div class="toast" id="toast"></div>
+
 
   <script>
     const ALL_SCREENS = ['title', 'eventType', 'fullDay', 'dateStart', 'dateEnd', 'timeStart', 'timeEnd', 'venue', 'confirm'];
@@ -955,7 +1133,7 @@
     function selectTitleCategory(cat) {
       // Tapping the selected option again clears it — the category is optional
       titleCategory = titleCategory === cat ? null : cat;
-      document.querySelectorAll('#titleCategoryGroup .radio-option').forEach(opt => {
+      document.querySelectorAll('#titleCategoryGroup .chip').forEach(opt => {
         opt.classList.toggle('selected', opt.dataset.category === titleCategory);
       });
     }
@@ -969,7 +1147,7 @@
     function selectEventType(type) {
       eventType = type;
       const screen = document.querySelector('[data-screen="eventType"]');
-      screen.querySelectorAll('.radio-option').forEach((opt, i) => {
+      screen.querySelectorAll('.option').forEach((opt, i) => {
         opt.classList.toggle('selected', (i === 0 && type === 'single') || (i === 1 && type === 'multi'));
       });
     }
@@ -1073,7 +1251,7 @@
         ctx.lineWidth = 3;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        ctx.strokeStyle = '#6ee591';
+        ctx.strokeStyle = '#6ee7b7'; // --emerald-300
       }
 
       resize();
@@ -1378,13 +1556,20 @@
           conflictHeader.classList.add('has-conflicts');
           conflictIcon.textContent = 'event_busy';
           conflictTitle.textContent = `${events.length} conflict${events.length > 1 ? 's' : ''}`;
-          events.forEach(ev => {
+          events.forEach((ev, i) => {
             const item = document.createElement('div');
-            item.className = 'conflict-item';
+            item.className = 'list-item';
+            const badge = document.createElement('span');
+            badge.className = 'item-badge';
+            badge.textContent = i + 1;
+            item.appendChild(badge);
+            const body = document.createElement('div');
+            body.className = 'list-item-body';
+            item.appendChild(body);
             const titleEl = document.createElement('div');
-            titleEl.className = 'conflict-item-title';
+            titleEl.className = 'item-title';
             titleEl.textContent = ev.summary || '(No title)';
-            item.appendChild(titleEl);
+            body.appendChild(titleEl);
             let timeStr = '';
             if (ev.start?.dateTime) {
               const s = new Date(ev.start.dateTime);
@@ -1395,9 +1580,9 @@
             }
             if (timeStr) {
               const timeEl = document.createElement('div');
-              timeEl.className = 'conflict-item-time';
+              timeEl.className = 'item-body';
               timeEl.textContent = timeStr;
-              item.appendChild(timeEl);
+              body.appendChild(timeEl);
             }
             conflictList.appendChild(item);
           });
@@ -1527,7 +1712,7 @@
       eventType = 'single';
       isFullDay = true;
       titleCategory = null;
-      document.querySelectorAll('#titleCategoryGroup .radio-option').forEach(opt => opt.classList.remove('selected'));
+      document.querySelectorAll('#titleCategoryGroup .chip').forEach(opt => opt.classList.remove('selected'));
       selectEventType('single');
       selectFullDay(true);
       flowIndex = 0;
@@ -1553,7 +1738,7 @@
     function populateSettings() {
       const settings = loadSettings();
       document.getElementById('openrouterKey').value = settings.openrouterKey || '';
-      document.getElementById('visionModel').value = settings.visionModel || 'anthropic/claude-sonnet-4';
+      setVisionModel(settings.visionModel);
       document.getElementById('googleClientId').value = settings.googleClientId || '';
     }
 
@@ -1561,8 +1746,72 @@
       const overlay = document.getElementById('settingsOverlay');
       const isOpen = overlay.classList.contains('open');
       if (!isOpen) populateSettings();
+      closeModelMenu();
       overlay.classList.toggle('open');
     }
+
+    // Vision model dropdown — ordered by key so each entry's position is stable
+    const VISION_MODELS = [
+      { key: '4O',  label: 'GPT-4o',          value: 'openai/gpt-4o' },
+      { key: '4OM', label: 'GPT-4o Mini',     value: 'openai/gpt-4o-mini' },
+      { key: 'CH4', label: 'Claude Haiku 4',  value: 'anthropic/claude-haiku-4' },
+      { key: 'CS4', label: 'Claude Sonnet 4', value: 'anthropic/claude-sonnet-4' },
+      { key: 'GF',  label: 'Gemini Flash',    value: 'google/gemini-flash-1.5' },
+    ];
+    const DEFAULT_VISION_MODEL = 'anthropic/claude-sonnet-4';
+
+    function setVisionModel(value) {
+      const model = VISION_MODELS.find(m => m.value === value)
+        || VISION_MODELS.find(m => m.value === DEFAULT_VISION_MODEL);
+      document.getElementById('visionModel').value = model.value;
+      document.getElementById('visionModelLabel').textContent = model.label;
+    }
+
+    function toggleModelMenu() {
+      const menu = document.getElementById('visionModelMenu');
+      if (menu.classList.contains('open')) { closeModelMenu(); return; }
+
+      const current = document.getElementById('visionModel').value;
+      menu.innerHTML = '';
+      VISION_MODELS.forEach(m => {
+        const selected = m.value === current;
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'select-row' + (selected ? ' selected' : '');
+        row.setAttribute('role', 'option');
+        row.setAttribute('aria-selected', selected);
+        [['select-key', m.key], ['select-label', m.label], ['select-check', selected ? '✓' : '']].forEach(([cls, text]) => {
+          const span = document.createElement('span');
+          span.className = cls;
+          span.textContent = text;
+          row.appendChild(span);
+        });
+        row.onclick = () => { setVisionModel(m.value); closeModelMenu(); };
+        menu.appendChild(row);
+      });
+
+      // Anchor 8px under the trigger; flip above if it would run off-screen
+      menu.classList.add('open');
+      const rect = document.getElementById('visionModelBtn').getBoundingClientRect();
+      const h = menu.offsetHeight;
+      const below = rect.bottom + 8;
+      menu.style.top = (below + h > window.innerHeight - 8 ? Math.max(8, rect.top - 8 - h) : below) + 'px';
+      menu.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - menu.offsetWidth - 8)) + 'px';
+    }
+
+    function closeModelMenu() {
+      document.getElementById('visionModelMenu').classList.remove('open');
+    }
+
+    document.addEventListener('pointerdown', (e) => {
+      const menu = document.getElementById('visionModelMenu');
+      if (!menu.classList.contains('open')) return;
+      if (menu.contains(e.target) || document.getElementById('visionModelBtn').contains(e.target)) return;
+      closeModelMenu();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModelMenu(); });
+    window.addEventListener('resize', closeModelMenu);
+    document.querySelector('.settings-panel').addEventListener('scroll', closeModelMenu);
 
     function showToast(msg) {
       const toast = document.getElementById('toast');
@@ -1603,18 +1852,18 @@
 
     void main() {
       vec2 uv = gl_FragCoord.xy / u_resolution.xy;
-      float time = u_time * 0.5;
+      float time = u_time * 0.3;
 
-      vec3 color1 = vec3(0.02, 0.08, 0.04);
-      vec3 color2 = vec3(0.0, 0.43, 0.21);
-      vec3 color3 = vec3(0.43, 0.90, 0.57);
+      // Obsidian field with a faint emerald glow — a rim of light, not a fill
+      vec3 base  = vec3(0.035, 0.055, 0.047); // --bg        #090e0c
+      vec3 glow  = vec3(0.063, 0.725, 0.506); // --emerald   #10b981
+      vec3 crest = vec3(0.431, 0.906, 0.718); // --emerald-300 #6ee7b7
 
-      float noise = sin(uv.x * 10.0 + time) * cos(uv.y * 10.0 - time) * 0.5 + 0.5;
       float aurora = sin(uv.x * 3.0 + uv.y * 5.0 + time * 0.8) * 0.5 + 0.5;
       aurora *= pow(1.0 - uv.y, 1.5);
 
-      vec3 finalColor = mix(color1, color2, aurora);
-      finalColor += color3 * pow(aurora, 8.0) * 0.5;
+      vec3 finalColor = base + glow * aurora * 0.16;
+      finalColor += crest * pow(aurora, 8.0) * 0.08;
 
       gl_FragColor = vec4(finalColor, 1.0);
     }

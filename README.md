@@ -13,7 +13,7 @@ A mobile PWA for quickly adding events to Google Calendar. Built because the def
 - **Google Calendar integration**: Events are created directly in your primary calendar
 - **Review & conflict check**: Final screen summarises your inputs and flags existing calendar events that overlap
 - **PWA**: Install on your phone's home screen — works like a native app
-- **Animated aurora UI**: Dark glassmorphic theme with WebGL shader background
+- **Emerald on Obsidian UI**: Dark, glassy theme with a single emerald accent: translucent cards with an emerald rim and corner glow, labels above the cards, and a subtle animated WebGL background
 
 ## Usage
 
