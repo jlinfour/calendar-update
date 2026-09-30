@@ -8,7 +8,7 @@ A mobile PWA for quickly adding events to Google Calendar. Built because the def
 - **Optional category tag**: Tag a title as Appointment, Deadline, Meeting, Reminder, or Tentative — the event is created as `[Appointment] Hair Treatment`
 - **Single-day & multi-day events**: With optional start/end date and time screens
 - **All-day events**: Skips time screens, creates all-day events on Google Calendar
-- **Write or type**: Toggle between handwriting canvas and typed input for date/time. Dates default to typing, and the `/` separators fill in automatically (backspace removes them)
+- **Write or type**: Toggle between handwriting canvas and typed input for date/time. Dates and times default to typing; in dates the `/` separators fill in automatically (backspace removes them)
 - **Handwriting recognition**: Powered by vision models via OpenRouter (fractions of a cent per call)
 - **Google Calendar integration**: Events are created directly in your primary calendar
 - **Review & conflict check**: Final screen summarises your inputs and flags existing calendar events that overlap

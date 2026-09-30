@@ -967,12 +967,12 @@
             <div class="panel-label-row">
               <div class="panel-label">Time (Start)</div>
               <div class="input-mode-toggle">
-                <button class="toggle-btn active" onclick="setInputMode('timeStart','handwrite')">Write</button>
-                <button class="toggle-btn" onclick="setInputMode('timeStart','type')">Type</button>
+                <button class="toggle-btn" onclick="setInputMode('timeStart','handwrite')">Write</button>
+                <button class="toggle-btn active" onclick="setInputMode('timeStart','type')">Type</button>
               </div>
             </div>
             <div class="card">
-              <div class="handwrite-mode active" id="timeStartHandwrite">
+              <div class="handwrite-mode" id="timeStartHandwrite">
                 <div class="canvas-container" id="timeStartCanvasContainer">
                   <canvas id="timeStartCanvas"></canvas>
                   <div class="canvas-placeholder">Write start time here<br>(hh:mm am/pm)</div>
@@ -985,7 +985,7 @@
                   </div>
                 </div>
               </div>
-              <div class="type-mode" id="timeStartType">
+              <div class="type-mode active" id="timeStartType">
                 <input class="text-input" id="timeStartTypedInput" type="text" placeholder="hh:mm am/pm" autocomplete="off">
               </div>
             </div>
@@ -998,12 +998,12 @@
             <div class="panel-label-row">
               <div class="panel-label">Time (End)</div>
               <div class="input-mode-toggle">
-                <button class="toggle-btn active" onclick="setInputMode('timeEnd','handwrite')">Write</button>
-                <button class="toggle-btn" onclick="setInputMode('timeEnd','type')">Type</button>
+                <button class="toggle-btn" onclick="setInputMode('timeEnd','handwrite')">Write</button>
+                <button class="toggle-btn active" onclick="setInputMode('timeEnd','type')">Type</button>
               </div>
             </div>
             <div class="card">
-              <div class="handwrite-mode active" id="timeEndHandwrite">
+              <div class="handwrite-mode" id="timeEndHandwrite">
                 <div class="canvas-container" id="timeEndCanvasContainer">
                   <canvas id="timeEndCanvas"></canvas>
                   <div class="canvas-placeholder">Write end time here<br>(hh:mm am/pm)</div>
@@ -1016,7 +1016,7 @@
                   </div>
                 </div>
               </div>
-              <div class="type-mode" id="timeEndType">
+              <div class="type-mode active" id="timeEndType">
                 <input class="text-input" id="timeEndTypedInput" type="text" placeholder="hh:mm am/pm" autocomplete="off">
               </div>
             </div>
@@ -1225,7 +1225,7 @@
       }
     }
 
-    const inputModes = { dateStart: 'type', dateEnd: 'type', timeStart: 'handwrite', timeEnd: 'handwrite' };
+    const inputModes = { dateStart: 'type', dateEnd: 'type', timeStart: 'type', timeEnd: 'type' };
 
     function setInputMode(field, mode) {
       inputModes[field] = mode;
