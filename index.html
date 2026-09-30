@@ -120,7 +120,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: calc(10px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) 0 calc(14px + env(safe-area-inset-left));
+      padding: calc(22px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) 12px calc(14px + env(safe-area-inset-left));
       flex-shrink: 0;
       position: relative;
       z-index: 1;
@@ -206,6 +206,13 @@
       scrollbar-width: thin;
       scrollbar-color: rgba(16, 185, 129, 0.25) transparent;
     }
+
+    /* Spacers place the content in the upper-middle: free space splits 1:2
+       above/below, and collapses to nothing when the screen is full.
+       The negative margins cancel the flex gap around each spacer. */
+    .screen::before, .screen::after { content: ''; flex: 1 0 0; }
+    .screen::before { margin-bottom: -24px; }
+    .screen::after { flex-grow: 2; margin-top: -24px; }
 
     /* ---------- Panel (label + card) ---------- */
     .panel {
@@ -307,6 +314,7 @@
     .chip-group {
       display: flex;
       flex-wrap: wrap;
+      justify-content: center;
       gap: 8px;
     }
 
@@ -559,7 +567,8 @@
       flex-shrink: 0;
     }
 
-    .nav-btn { padding: 12px 20px; font-size: 14px; }
+    /* Fixed width so Back / Next stay the same size whatever the label */
+    .nav-btn { width: 156px; padding: 12px 16px; font-size: 14px; white-space: nowrap; }
     .nav-btn.hidden { visibility: hidden; }
     .nav-btn.submit { box-shadow: 0 0 24px rgba(16, 185, 129, 0.35); }
 
@@ -836,7 +845,6 @@
                 <button class="chip" data-category="Reminder" onclick="selectTitleCategory('Reminder')">Reminder</button>
                 <button class="chip" data-category="Tentative" onclick="selectTitleCategory('Tentative')">Tentative</button>
               </div>
-              <div class="helper">Tap a selected category again to clear it.</div>
             </div>
           </div>
         </div>
@@ -897,12 +905,12 @@
             <div class="panel-label-row">
               <div class="panel-label" id="dateStartLabel">Date (Start)</div>
               <div class="input-mode-toggle">
-                <button class="toggle-btn active" onclick="setInputMode('dateStart','handwrite')">Write</button>
-                <button class="toggle-btn" onclick="setInputMode('dateStart','type')">Type</button>
+                <button class="toggle-btn" onclick="setInputMode('dateStart','handwrite')">Write</button>
+                <button class="toggle-btn active" onclick="setInputMode('dateStart','type')">Type</button>
               </div>
             </div>
             <div class="card">
-              <div class="handwrite-mode active" id="dateStartHandwrite">
+              <div class="handwrite-mode" id="dateStartHandwrite">
                 <div class="canvas-container" id="dateStartCanvasContainer">
                   <canvas id="dateStartCanvas"></canvas>
                   <div class="canvas-placeholder">Write date here<br>(dd/mm/yy)</div>
@@ -915,8 +923,8 @@
                   </div>
                 </div>
               </div>
-              <div class="type-mode" id="dateStartType">
-                <input class="text-input" id="dateStartTypedInput" type="text" placeholder="dd/mm/yy" autocomplete="off">
+              <div class="type-mode active" id="dateStartType">
+                <input class="text-input date-input" id="dateStartTypedInput" type="text" inputmode="numeric" maxlength="8" placeholder="dd/mm/yy" autocomplete="off">
               </div>
             </div>
           </div>
@@ -928,12 +936,12 @@
             <div class="panel-label-row">
               <div class="panel-label">Date (End)</div>
               <div class="input-mode-toggle">
-                <button class="toggle-btn active" onclick="setInputMode('dateEnd','handwrite')">Write</button>
-                <button class="toggle-btn" onclick="setInputMode('dateEnd','type')">Type</button>
+                <button class="toggle-btn" onclick="setInputMode('dateEnd','handwrite')">Write</button>
+                <button class="toggle-btn active" onclick="setInputMode('dateEnd','type')">Type</button>
               </div>
             </div>
             <div class="card">
-              <div class="handwrite-mode active" id="dateEndHandwrite">
+              <div class="handwrite-mode" id="dateEndHandwrite">
                 <div class="canvas-container" id="dateEndCanvasContainer">
                   <canvas id="dateEndCanvas"></canvas>
                   <div class="canvas-placeholder">Write end date here<br>(dd/mm/yy)</div>
@@ -946,8 +954,8 @@
                   </div>
                 </div>
               </div>
-              <div class="type-mode" id="dateEndType">
-                <input class="text-input" id="dateEndTypedInput" type="text" placeholder="dd/mm/yy" autocomplete="off">
+              <div class="type-mode active" id="dateEndType">
+                <input class="text-input date-input" id="dateEndTypedInput" type="text" inputmode="numeric" maxlength="8" placeholder="dd/mm/yy" autocomplete="off">
               </div>
             </div>
           </div>
@@ -1217,17 +1225,33 @@
       }
     }
 
-    const inputModes = { dateStart: 'handwrite', dateEnd: 'handwrite', timeStart: 'handwrite', timeEnd: 'handwrite' };
+    const inputModes = { dateStart: 'type', dateEnd: 'type', timeStart: 'handwrite', timeEnd: 'handwrite' };
 
     function setInputMode(field, mode) {
       inputModes[field] = mode;
       document.getElementById(`${field}Handwrite`).classList.toggle('active', mode === 'handwrite');
       document.getElementById(`${field}Type`).classList.toggle('active', mode === 'type');
+      // A canvas that starts hidden was never sized — size it once it's visible
+      const c = canvases[field];
+      if (mode === 'handwrite' && c) {
+        const rect = c.container.getBoundingClientRect();
+        if (c.canvas.width !== Math.round(rect.width * window.devicePixelRatio)) c.resize();
+      }
       const screen = document.querySelector(`[data-screen="${field}"]`);
       screen.querySelectorAll('.toggle-btn').forEach(btn => {
         btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === (mode === 'handwrite' ? 'write' : 'type'));
       });
     }
+
+    document.querySelectorAll('.date-input').forEach(input => {
+      input.addEventListener('input', (e) => {
+        if (e.inputType && e.inputType.startsWith('delete')) return;
+        if (input.selectionStart !== input.value.length) return;
+        let v = input.value.replace(/\/{2,}/g, '/');
+        if (/^\d{2}$/.test(v) || /^\d{2}\/\d{2}$/.test(v)) v += '/';
+        input.value = v;
+      });
+    });
 
     function getFieldValue(field) {
       if (inputModes[field] === 'type') {
