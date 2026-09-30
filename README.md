@@ -10,6 +10,8 @@ A mobile PWA for quickly adding events to Google Calendar. Built because the def
 - **All-day events**: Skips time screens, creates all-day events on Google Calendar
 - **Write or type**: Toggle between handwriting canvas and typed input for date/time. Dates and times default to typing; in dates the `/` separators fill in automatically (backspace removes them)
 - **Handwriting recognition**: Powered by vision models via OpenRouter (fractions of a cent per call)
+- **Checks before submitting**: Rejects impossible dates (e.g. 31/02), and an end that's before the start
+- **Works offline**: The app itself loads without a connection (creating events still needs one)
 - **Google Calendar integration**: Events are created directly in your primary calendar
 - **Review & conflict check**: Final screen summarises your inputs and flags existing calendar events that overlap
 - **PWA**: Install on your phone's home screen — works like a native app
@@ -39,7 +41,7 @@ A mobile PWA for quickly adding events to Google Calendar. Built because the def
 
 ## Tech Stack
 
-- Vanilla HTML/CSS/JS (single file, no build step)
+- Vanilla HTML/CSS/JS (no framework, no build step)
 - Google Calendar API (OAuth2 implicit flow, with `state` CSRF protection)
 - OpenRouter API (vision models for handwriting recognition)
 - GitHub Pages hosting, deployed via a GitHub Actions workflow
